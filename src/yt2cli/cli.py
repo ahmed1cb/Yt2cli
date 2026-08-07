@@ -9,9 +9,7 @@ def main():
     app = Yt2cli()
     while True:
         try:
-            args = input("Enter Command to Continue: ")
+            args = input("Yt2Cli Run: ")
             app.handle(args)
         except KeyboardInterrupt:
             sys.exit(" App Closed")
-        except Exception:
-            print("Something Went Wrong")
