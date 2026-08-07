@@ -68,14 +68,14 @@ class Yt2cli:
         for vid in videos:
             target = videos[vid]
             self.videos.append(target)
-            print(f"{i}-{target['title']} , BY CHANNEL [{target['channelName']}]")
+            print(f"{i}-{target['title']} , BY CHANNEL [{target['channel']}]")
             print("-" * 20)
             i += 1
 
     def _list(self):
         i = 0
         for target in self.videos:
-            print(f"{i}-{target['title']} , BY CHANNEL [{target['channelName']}]")
+            print(f"{i}-{target['title']} , BY CHANNEL [{target['channel']}]")
             print("-" * 20)
             i += 1
 
