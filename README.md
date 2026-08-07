@@ -37,7 +37,7 @@ The app relies on [mpv](https://mpv.io/installation/) as the default player. If 
 ## Usage
 
 ```bash
-poetry run yt2cli
+yt2cli
 ```
 
 ## Available Commands
