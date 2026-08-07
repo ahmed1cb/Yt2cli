@@ -41,6 +41,8 @@ class Yt2cli:
         self.show_options()
 
     def handle(self, args: list | str):
+        if not args:
+            return
         if type(args) is str:
             args = args.split()
         command = args[0]
@@ -99,8 +101,18 @@ class Yt2cli:
             print("Id Is Required")
             return
 
-        id = int(params[0])
+        try:
+            id = int(params[0])
+        except ValueError:
+            print("Invalid Id , Should be a Number")
+            return
+
+        if id >= len(self.videos) or id < 0:
+            print("Invalid Id, Should Be in the List of the Videos ")
+            return
+
         target = self.videos[id]
+
         if target is None:
             print("Video With That id Wasnt Found Please Try Again")
 
