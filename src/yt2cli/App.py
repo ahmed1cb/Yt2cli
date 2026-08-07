@@ -82,12 +82,8 @@ class Yt2cli:
             return
         videos = self.backend.search(queryStr, limit)
         i = 0
-        for vid in videos:
-            target = videos[vid]
-            self.videos.append(target)
-            print(f"{i}-{target['title']} , BY CHANNEL [{target['channel']}]")
-            print("-" * 20)
-            i += 1
+        self.videos = list(videos.values())
+        self._list()
 
     def _list(self):
         i = 0

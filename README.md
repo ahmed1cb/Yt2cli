@@ -42,14 +42,14 @@ yt2cli
 
 ## Available Commands
 
-| Command          | Description                                           |
-| ---------------- | ----------------------------------------------------- |
-| `search <query>` | Search for YouTube videos                             |
-| `list`           | Show the currently loaded videos from the last search |
-| `open <id>`      | Play a video from the list by its number              |
-| `clear`          | Clear the terminal screen                             |
-| `help`           | Show a list of available commands                     |
-| `exit`           | Close the app                                         |
+| Command                 | Description                                           |
+| ----------------------- | ----------------------------------------------------- |
+| `search <query> :limit` | Search for YouTube videos                             |
+| `list`                  | Show the currently loaded videos from the last search |
+| `open <id>`             | Play a video from the list by its number              |
+| `clear`                 | Clear the terminal screen                             |
+| `help`                  | Show a list of available commands                     |
+| `exit`                  | Close the app                                         |
 
 ### Example
 
