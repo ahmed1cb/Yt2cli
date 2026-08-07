@@ -6,7 +6,7 @@ class Backend:
     def __init__(self):
         self.cache = {}
 
-    def search(self, query: str) -> dict:
+    def search(self, query: str, limit: int = 10) -> dict:
         final_results = {}
         ydl_opts = {
             "quiet": True,
@@ -17,7 +17,7 @@ class Backend:
         if query in self.cache:
             final_results = self.cache.get(query)
         else:
-            search_query = f"ytsearch{60}:{query}"
+            search_query = f"ytsearch{limit}:{query}"
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(search_query, download=False)
                 entries = info.get("entries", [])

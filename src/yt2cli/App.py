@@ -12,7 +12,7 @@ class Yt2cli:
         self._clear()
         self.options = {
             "search": {
-                "desc": "Use it To Search for Youtube Videos , usage: search :query",
+                "desc": "Use it To Search for Youtube Videos , usage: search :query \:limits",
                 "_callable": self._search,
             },
             "open": {
@@ -58,12 +58,27 @@ class Yt2cli:
         for option in self.options:
             print(f"{option} : {self.options.get(option)['desc']} ")
 
-    def _search(self, query: str | list = ""):
+    def _search(self, params: str | list = ""):
+        params = params or []
         self._clear()
         self.videos = []
-        queryStr = " ".join(query)
+        limit = 10
+        queryParts = []
+        for param in params:
+            if param.startswith(":"):
+                try:
+                    limit = int(param[1:])
+                except:
+                    print("Invalid limit. Usage: search <query> :<limit>")
+                    return
+            else:
+                queryParts.append(param)
 
-        videos = self.backend.search(queryStr)
+        queryStr = " ".join(queryParts)
+        if not queryStr:
+            print("Query String Is Required")
+            return
+        videos = self.backend.search(queryStr, limit)
         i = 0
         for vid in videos:
             target = videos[vid]
@@ -80,7 +95,6 @@ class Yt2cli:
             i += 1
 
     def _load(self, params: list = []):
-
         if not params or len(params) == 0:
             print("Id Is Required")
             return
