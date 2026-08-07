@@ -1,0 +1,38 @@
+# Python Mods
+import os
+import platform
+import shutil
+import subprocess
+
+# Required Libs
+import yt_dlp
+
+
+class Player:
+    def play(self, basic_url: str):
+        stream_url = self._get_stream_url(basic_url)
+        self.open_with_player(stream_url)
+
+    def open_with_player(self, stream_url: str):
+        if shutil.which("mpv"):
+            subprocess.run(["mpv", stream_url])
+            return
+
+        system = platform.system()
+        if system == "Windows":
+            os.startfile(stream_url)
+        elif system == "Darwin":
+            subprocess.run(["open", stream_url])
+        else:
+            subprocess.run(["xdg-open", stream_url])
+
+    def _get_stream_url(self, basic: str):
+        ydl_opts = {
+            "format": "best",
+            "quiet": True,
+            "merge_output_format": "mp4",
+            "noplaylist": True,
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(basic, download=False)
+            return info["url"]
