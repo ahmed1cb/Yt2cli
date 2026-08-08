@@ -1,6 +1,6 @@
 [project]
 name = "yt2cli"
-version = "0.1.1"
+version = "0.1.2"
 description = "Access To Youtube Easly From Your Terminal Without Api Key"
 authors = [
     {name = "Ahmed Hassan",email = "ah8438263@gmail.com"}
