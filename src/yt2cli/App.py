@@ -1,7 +1,5 @@
 # Python Mods
 import os
-import platform
-import subprocess
 import sys
 
 # App Modules
@@ -207,48 +205,7 @@ class Yt2cli:
             print("Video With That id Wasnt Found Please Try Again")
 
         url = target["url"]
-        output_path = self.open_dialog()
-        self.backend.download(url, output_path)
-
-    def open_dialog(self):
-        system = platform.system()
-
-        if system == "Linux":
-            result = subprocess.run(
-                [
-                    "zenity",
-                    "--file-selection",
-                    "--directory",
-                    "--title=Choose Directory to Save the Video inside",
-                ],
-                capture_output=True,
-                text=True,
-            )
-            return result.stdout.strip()
-
-        elif system == "Darwin":  # macOS
-            result = subprocess.run(
-                [
-                    "osascript",
-                    "-e",
-                    'POSIX path of (choose folder with prompt "Choose Directory to Save the Video inside")',
-                ],
-                capture_output=True,
-                text=True,
-            )
-            return result.stdout.strip()
-
-        elif system == "Windows":
-            ps_script = """
-                                Add-Type -AssemblyName System.Windows.Forms
-                                $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
-                                $dialog.ShowDialog() | Out-Null
-                                $dialog.SelectedPath
-                        """
-            result = subprocess.run(
-                ["powershell", "-Command", ps_script], capture_output=True, text=True
-            )
-            return result.stdout.strip()
+        self.backend.download(url)
 
     def _clear(self):
         os.system("cls" if os.name == "nt" else "clear")

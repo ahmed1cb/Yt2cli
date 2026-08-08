@@ -1,4 +1,7 @@
 # Required Modules
+import platform
+import subprocess
+
 import yt_dlp
 
 
@@ -59,7 +62,8 @@ class Backend:
             if txt is not None:
                 return txt["runs"][0]["text"]
 
-    def download(self, stream_url, output_path):
+    def download(self, stream_url):
+        output_path = self.open_dialog()
         ydl_opts = {
             "format": "best",  # 'best' usually selects the best quality stream available
             "outtmpl": f"{output_path}/%(title)s.%(ext)s",
@@ -75,3 +79,43 @@ class Backend:
                 ydl.download([stream_url])
         except:
             print(f"Download failed")
+
+    def open_dialog(self):
+        system = platform.system()
+
+        if system == "Linux":
+            result = subprocess.run(
+                [
+                    "zenity",
+                    "--file-selection",
+                    "--directory",
+                    "--title=Choose Directory to Save the Video inside",
+                ],
+                capture_output=True,
+                text=True,
+            )
+            return result.stdout.strip()
+
+        elif system == "Darwin":  # macOS
+            result = subprocess.run(
+                [
+                    "osascript",
+                    "-e",
+                    'POSIX path of (choose folder with prompt "Choose Directory to Save the Video inside")',
+                ],
+                capture_output=True,
+                text=True,
+            )
+            return result.stdout.strip()
+
+        elif system == "Windows":
+            ps_script = """
+                                Add-Type -AssemblyName System.Windows.Forms
+                                $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
+                                $dialog.ShowDialog() | Out-Null
+                                $dialog.SelectedPath
+                        """
+            result = subprocess.run(
+                ["powershell", "-Command", ps_script], capture_output=True, text=True
+            )
+            return result.stdout.strip()
