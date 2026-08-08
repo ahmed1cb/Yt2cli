@@ -6,7 +6,13 @@ class Backend:
     def __init__(self):
         self.cache = {}
 
+    def clear_cache(self):
+        self.cache = {}
+
     def search(self, query: str, limit: int = 10) -> dict:
+
+        queryKey = f"{query}x{limit}"
+
         final_results = {}
         ydl_opts = {
             "quiet": True,
@@ -14,8 +20,8 @@ class Backend:
             "noplaylist": True,
         }
 
-        if query in self.cache:
-            final_results = self.cache.get(query)
+        if queryKey in self.cache:
+            final_results = self.cache.get(queryKey)
         else:
             search_query = f"ytsearch{limit}:{query}"
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -29,7 +35,7 @@ class Backend:
                         "channel": entry.get("channel") or entry.get("uploader"),
                         "views": self._parse_views(entry.get("view_count")),
                     }
-        self.cache[query] = final_results
+        self.cache[queryKey] = final_results
         return final_results
 
     def _parse_views(self, views: int | str):

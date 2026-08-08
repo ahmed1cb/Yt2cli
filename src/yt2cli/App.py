@@ -35,10 +35,28 @@ class Yt2cli:
                 "desc": "Show A List of Available Commands",
                 "_callable": lambda x=0: self.show_options(),
             },
+            "reset": {
+                "desc": "Remove The Saved Search And Backend Cache",
+                "_callable": lambda x: self._reset(),
+            },
+            "cache:clear": {
+                "desc": "Remove the Cached Search Results",
+                "_callable": lambda x: self._clear_cache(),
+            },
         }
         self.videos = []
         self.backend = Backend()
         self.show_options()
+
+    def _clear_cache(self):
+        self.backend.clear_cache()
+
+    def _clear_list(self):
+        self.videos = []
+
+    def _reset(self):
+        self._clear_cache()
+        self._clear_list()
 
     def handle(self, args: list | str):
         if not args:
@@ -58,9 +76,15 @@ class Yt2cli:
         targetOption.get("_callable")(params)
 
     def show_options(self):
-        print("*" * 5 + " Available Options " + "*" * 5)
+        print("=" * 50)
+        print(f"{'AVAILABLE OPTIONS':^50}")
+        print("=" * 50)
+
         for option in self.options:
-            print(f"{option} : {self.options.get(option)['desc']} ")
+            desc = self.options.get(option)["desc"]
+            print(f"  [{option}]  {desc}")
+
+        print("=" * 50)
 
     def _search(self, params: str | list = ""):
         params = params or []
