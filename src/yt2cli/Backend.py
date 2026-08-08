@@ -37,9 +37,16 @@ class Backend:
                         "url": entry.get("url"),
                         "channel": entry.get("channel") or entry.get("uploader"),
                         "views": self._parse_views(entry.get("view_count")),
+                        "thumbnail": self._get_thumbnail(entry),
                     }
         self.cache[queryKey] = final_results
         return final_results
+
+    def _get_thumbnail(self, entry):
+        thumbnails = entry.get("thumbnails")
+        if thumbnails:
+            return thumbnails[-1].get("url")
+        return entry.get("thumbnail")
 
     def _parse_views(self, views: int | str):
         try:
