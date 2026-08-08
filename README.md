@@ -92,6 +92,7 @@ yt2cli/
 
 - The app uses [yt-dlp](https://github.com/yt-dlp/yt-dlp) to search and extract video playback URLs.
 - Search results are cached per query in memory; playing a video re-resolves the stream URL with yt-dlp.
+- Download the Deno Javascript Runtime to get the best Video Quality
 
 ## License
 
