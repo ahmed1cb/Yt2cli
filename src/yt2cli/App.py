@@ -37,16 +37,33 @@ class Yt2cli:
             },
             "reset": {
                 "desc": "Remove The Saved Search And Backend Cache",
-                "_callable": lambda x: self._reset(),
+                "_callable": lambda x=0: self._reset(),
             },
             "cache:clear": {
                 "desc": "Remove the Cached Search Results",
-                "_callable": lambda x: self._clear_cache(),
+                "_callable": lambda x=0: self._clear_cache(),
+            },
+            "more": {
+                "desc": "Get More Videos from the Last Searched Query",
+                "_callable": lambda x=0: self._more(),
             },
         }
         self.videos = []
+        self.lastQueury = []  # [query , limit]
         self.backend = Backend()
         self.show_options()
+
+    def _more(self):
+        if len(self.lastQueury) < 1:
+            print("There is no History To Search From")
+            return
+        queryStr = self.lastQueury[0]
+        limit = self.lastQueury[1]
+        self.lastQueury[1] = limit + 5
+        newVids = list(self.backend.search(queryStr, limit + 5).values())
+        self.videos = newVids
+        self._clear()  # Clear Terminal
+        self._list()
 
     def _clear_cache(self):
         self.backend.clear_cache()
@@ -106,6 +123,7 @@ class Yt2cli:
                 queryParts.append(param)
 
         queryStr = " ".join(queryParts)
+        self.lastQueury = [queryStr, limit]
         if not queryStr:
             print("Query String Is Required")
             return
@@ -113,7 +131,6 @@ class Yt2cli:
         print(" Now Loading...")
         videos = self.backend.search(queryStr, limit)
         self._clear()
-        i = 0
 
         print(
             "*" * 10 + f" Search Results For: {queryStr} , Limit= {limit} " + "*" * 10
@@ -122,8 +139,7 @@ class Yt2cli:
         self._list()
 
     def _list(self):
-        i = 0
-        for target in self.videos:
+        for i, target in enumerate(self.videos):
             target["id"] = i
             self.print_video_card(target)
             print("*" * 20)
