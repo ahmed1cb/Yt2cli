@@ -1,5 +1,7 @@
 # Python Mods
 import os
+import platform
+import subprocess
 import sys
 
 # App Modules
@@ -47,6 +49,10 @@ class Yt2cli:
                 "desc": "Get More Videos from the Last Searched Query",
                 "_callable": lambda x=0: self._more(),
             },
+            "download": {
+                "desc": "Download A Youtube Video",
+                "_callable": self._download,
+            },
         }
         self.videos = []
         self.lastQueury = []  # [query , limit]
@@ -57,12 +63,13 @@ class Yt2cli:
         if len(self.lastQueury) < 1:
             print("There is no History To Search From")
             return
+        self._clear()  # Clear Terminal
         queryStr = self.lastQueury[0]
         limit = self.lastQueury[1]
         self.lastQueury[1] = limit + 5
+        print(" Now Loading...")
         newVids = list(self.backend.search(queryStr, limit + 5).values())
         self.videos = newVids
-        self._clear()  # Clear Terminal
         self._list()
 
     def _clear_cache(self):
@@ -178,6 +185,70 @@ class Yt2cli:
         player = Player()
 
         player.play(url)
+
+    def _download(self, params: list = []):
+        if not params or len(params) == 0:
+            print("Id Is Required")
+            return
+
+        try:
+            id = int(params[0])
+        except ValueError:
+            print("Invalid Id , Should be a Number")
+            return
+
+        if id >= len(self.videos) or id < 0:
+            print("Invalid Id, Should Be in the List of the Videos ")
+            return
+
+        target = self.videos[id]
+
+        if target is None:
+            print("Video With That id Wasnt Found Please Try Again")
+
+        url = target["url"]
+        output_path = self.open_dialog()
+        self.backend.download(url, output_path)
+
+    def open_dialog(self):
+        system = platform.system()
+
+        if system == "Linux":
+            result = subprocess.run(
+                [
+                    "zenity",
+                    "--file-selection",
+                    "--directory",
+                    "--title=Choose Directory to Save the Video inside",
+                ],
+                capture_output=True,
+                text=True,
+            )
+            return result.stdout.strip()
+
+        elif system == "Darwin":  # macOS
+            result = subprocess.run(
+                [
+                    "osascript",
+                    "-e",
+                    'POSIX path of (choose folder with prompt "Choose Directory to Save the Video inside")',
+                ],
+                capture_output=True,
+                text=True,
+            )
+            return result.stdout.strip()
+
+        elif system == "Windows":
+            ps_script = """
+                                Add-Type -AssemblyName System.Windows.Forms
+                                $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
+                                $dialog.ShowDialog() | Out-Null
+                                $dialog.SelectedPath
+                        """
+            result = subprocess.run(
+                ["powershell", "-Command", ps_script], capture_output=True, text=True
+            )
+            return result.stdout.strip()
 
     def _clear(self):
         os.system("cls" if os.name == "nt" else "clear")

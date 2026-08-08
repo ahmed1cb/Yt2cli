@@ -58,3 +58,20 @@ class Backend:
             txt = video.get(key, None)
             if txt is not None:
                 return txt["runs"][0]["text"]
+
+    def download(self, stream_url, output_path):
+        ydl_opts = {
+            "format": "best",  # 'best' usually selects the best quality stream available
+            "outtmpl": f"{output_path}/%(title)s.%(ext)s",
+            "quiet": False,
+            "paths": {
+                "home": output_path,
+            },
+        }
+
+        print(f"Download Started On: {output_path}")
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([stream_url])
+        except:
+            print(f"Download failed")
