@@ -27,9 +27,25 @@ class Backend:
                         "title": entry.get("title"),
                         "url": entry.get("url"),
                         "channel": entry.get("channel") or entry.get("uploader"),
+                        "views": self._parse_views(entry.get("view_count")),
                     }
         self.cache[query] = final_results
         return final_results
+
+    def _parse_views(self, views: int | str):
+        try:
+            views = int(views)
+            if views >= 1_000_000_000:
+                return f"{views / 1000_000_000:.2f}B"
+            elif views >= 1_000_000:
+                return f"{views / 1000_000:.2f}M"
+            elif views >= 1_000:
+                return f"{views / 1000:.2f}K"
+
+            else:
+                return views
+        except:
+            return views
 
     def get_channel_name(self, video):
         for key in ["longBylineText", "shortBylineText", "ownerText"]:

@@ -72,6 +72,9 @@ class Yt2cli:
             if param.startswith("--limit"):
                 try:
                     limit = int(param[param.index("=") + 1 :])
+                    if limit > 99:
+                        print("Invalid Limit Param , Max Limit is 100")
+                        return
                 except:
                     print("Invalid limit. Usage: search <query> --limit=<limit>")
                     return
@@ -83,7 +86,9 @@ class Yt2cli:
             print("Query String Is Required")
             return
 
+        print(" Now Loading...")
         videos = self.backend.search(queryStr, limit)
+        self._clear()
         i = 0
 
         print(
@@ -95,9 +100,19 @@ class Yt2cli:
     def _list(self):
         i = 0
         for target in self.videos:
-            print(f"{i}-{target['title']} , BY CHANNEL [{target['channel']}]")
-            print("-" * 20)
+            target["id"] = i
+            self.print_video_card(target)
+            print("*" * 20)
             i += 1
+
+    def print_video_card(self, video: dict):
+        print(" ──────────────────────────────────────────────────────────────")
+        print(f"  {video.get('title'):<56}")
+        print("                                                               ")
+        print(f"  ID       : {video.get('id')}")
+        print(f"  Channel  : {video.get('channel')}")
+        print(f"  Views    : {video.get('views')}")
+        print(" ──────────────────────────────────────────────────────────────")
 
     def _load(self, params: list = []):
         if not params or len(params) == 0:
