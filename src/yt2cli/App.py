@@ -46,12 +46,14 @@ class Yt2cli:
         if type(args) is str:
             args = args.split()
         command = args[0]
+
         params = args[1:]
 
         targetOption = self.options.get(command)
+        # Now the Search is the Default Option
         if targetOption is None:
-            print("Option Not Found")
-            self.show_options()
+            params.insert(0, command)
+            self._search(params)
             return
         targetOption.get("_callable")(params)
 
@@ -67,11 +69,11 @@ class Yt2cli:
         limit = 10
         queryParts = []
         for param in params:
-            if param.startswith(":"):
+            if param.startswith("--limit"):
                 try:
-                    limit = int(param[1:])
+                    limit = int(param[param.index("=") + 1 :])
                 except:
-                    print("Invalid limit. Usage: search <query> :<limit>")
+                    print("Invalid limit. Usage: search <query> --limit=<limit>")
                     return
             else:
                 queryParts.append(param)
@@ -80,8 +82,13 @@ class Yt2cli:
         if not queryStr:
             print("Query String Is Required")
             return
+
         videos = self.backend.search(queryStr, limit)
         i = 0
+
+        print(
+            "*" * 10 + f" Search Results For: {queryStr} , Limit= {limit} " + "*" * 10
+        )
         self.videos = list(videos.values())
         self._list()
 
