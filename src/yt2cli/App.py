@@ -162,16 +162,17 @@ class Yt2cli:
         if not params or len(params) == 0:
             print("Params Are Required")
             return
-        video_native_url = ""
-        for param in params:
-            if param.startswith("--url"):
-                video_native_url = param[param.index("=") + 1 :]
+        video_options = {}
+        video_allowed_options = {"--url": str}
+        open_parser = Params(video_allowed_options, params)
+
+        video_options = video_options | open_parser.get_params_with_values()
 
         player = Player()
 
-        if video_native_url:
+        if video_options.get("url"):
             try:
-                player.play(video_native_url)
+                player.play(video_options["url"])
                 return
             except:
                 print("Something Went Wrong While Trying to Open the Video")
