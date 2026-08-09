@@ -2,10 +2,10 @@
 import os
 import sys
 
-from .Backend import Backend
-from .Player import Player
-
 # App Modules
+from .Backend import Backend
+from .ParamManager import Params
+from .Player import Player
 from .SearchResults import Results
 
 
@@ -110,39 +110,39 @@ class Yt2cli:
 
         print("=" * 50)
 
-    def _search(self, params: str | list = ""):
-        params = params or []
+    def _search(self, params: list = []):
         self._clear()
-        self.videos = []
-        limit = 10
-        queryParts = []
-        for param in params:
-            if param.startswith("--limit"):
-                try:
-                    limit = int(param[param.index("=") + 1 :])
-                    if limit > 100:
-                        print("Invalid Limit Param , Max Limit is 100")
-                        return
-                except:
-                    print("Invalid limit. Usage: search <query> --limit=<limit>")
-                    return
-            else:
-                queryParts.append(param)
+        search_options = {"limit": 10}
 
-        queryStr = " ".join(queryParts)
-        self.lastQueury = [queryStr, limit]
+        # key : type
+        search_allowed_options = {"--limit": int}
+
+        search_params_parser = Params(search_allowed_options, params)
+
+        search_options = search_options | search_params_parser.get_params_with_values()
+
+        queryStr = " ".join(search_params_parser.get_normal_strings())
+
+        if search_options["limit"] > 100:
+            print("Invalid Limit , The max is 100")
+            return
+
         if not queryStr:
             print("Query String Is Required")
             return
 
+        self.lastQueury = [queryStr, search_options["limit"]]
         print(" Now Loading...")
-        videos = self.backend.search(queryStr, limit)
+        videos = self.backend.search(queryStr, search_options)
         self._clear()
 
         print(
-            "*" * 10 + f" Search Results For: {queryStr} , Limit= {limit} " + "*" * 10
+            "*" * 10
+            + f" Search Results For: {queryStr} , Limit = {search_options['limit']} "
+            + "*" * 10
         )
         self.videos = list(videos.values())
+
         self._list()
 
     def _list(self):
@@ -150,6 +150,7 @@ class Yt2cli:
             target["id"] = i
 
         resultsView = Results(self.videos)
+        print(" Now Showing ...")
         resultsView.print_video_cards()
 
     def _load(self, params: list = []):

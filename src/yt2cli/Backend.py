@@ -13,7 +13,9 @@ class Backend:
     def clear_cache(self):
         self.cache = {}
 
-    def search(self, query: str, limit: int = 10) -> dict:
+    def search(self, query: str, options: dict) -> dict:
+
+        limit = options["limit"]
 
         queryKey = f"{query}x{limit}"
 
@@ -40,6 +42,7 @@ class Backend:
                         "views": self._parse_views(entry.get("view_count")),
                         "thumbnail": self._get_thumbnail(entry),
                         "duration": self._parse_duration(entry.get("duration")),
+                        "is_short": int(entry.get("duration", "0")) <= 60,
                     }
         self.cache[queryKey] = final_results
         return final_results

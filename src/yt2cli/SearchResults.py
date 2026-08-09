@@ -30,7 +30,7 @@ class Results:
         padded_cards = [
             [self._pad(l, card_width, gap) for l in card] for card in raw_cards
         ]
-
+        self._clear()
         for row_start in range(0, len(padded_cards), cols):
             row_cards = padded_cards[row_start : row_start + cols]
             max_height = max(len(c) for c in row_cards)
@@ -46,6 +46,7 @@ class Results:
         channel = video.get("channel") or "Unknown"
         views = video.get("views") or "-"
         duration = video.get("duration")
+        is_short = video.get("is_short")
         vid = video.get("id")
 
         info_lines = [
@@ -54,6 +55,7 @@ class Results:
             f"      {self._truncate(channel, 40)}",
             f"      {views} views",
             f"      {duration} duration",
+            f"      {'short' if is_short else 'long'} video",
         ]
 
         img_lines = []

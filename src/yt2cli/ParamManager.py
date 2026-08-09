@@ -1,0 +1,38 @@
+class Params:
+    def __init__(self, options: dict, params: list) -> None:
+        self.options = options
+        self.params = params
+
+    def get_normal_strings(
+        self,
+    ) -> list:
+        strs = []
+        params = self.params
+        for param in params:
+            for option in list(self.options.keys()):
+                if not param.startswith(option):
+                    strs.append(param)
+        return strs
+
+    def get_params_with_values(self) -> dict:
+        results = {}
+        params = self.params
+        for param in params:
+            for option in list(self.options.keys()):
+                if param.startswith(option):
+                    try:
+                        eq_idx = param.find("=")
+                        if eq_idx == -1:
+                            print(
+                                f"Invalid Usage for Parameter {option}, Usage: --{option}={self.options[option].__name__}"
+                            )
+                            return {}
+                        value = self.options[option](param[eq_idx + 1 :])
+                        results[option.replace("--", "")] = value
+                        break
+                    except:
+                        print(
+                            f"Invalid Value For {option}. Should be {self.options[option].__name__} , Usage:  {option}={self.options[option].__name__}"
+                        )
+                        return {}
+        return results
