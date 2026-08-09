@@ -217,14 +217,14 @@ class Yt2cli:
                 video_native_url = param[param.index("=") + 1 :]
 
         player = Player()
-        try:
-            player.play(video_native_url)
 
-        except:
-            print("Something Went Wrong While Trying to Open the Video")
-            return
         if video_native_url:
-            return
+            try:
+                player.play(video_native_url)
+                return
+            except:
+                print("Something Went Wrong While Trying to Open the Video")
+                return
         try:
             id = int(params[0])
         except ValueError:
