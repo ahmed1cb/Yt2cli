@@ -64,12 +64,12 @@ class Yt2cli:
             print("There is no History To Search From")
             return
         self._clear()  # Clear Terminal
-        queryStr = self.lastQueury[0]
+        query_str = self.lastQueury[0]
         limit = self.lastQueury[1]
         self.lastQueury[1] = limit + 5
         print(" Now Loading...")
-        newVids = list(self.backend.search(queryStr, limit + 5).values())
-        self.videos = newVids
+        new_vids = list(self.backend.search(query_str, limit + 5).values())
+        self.videos = new_vids
         self._list()
 
     def _clear_cache(self):
@@ -112,33 +112,38 @@ class Yt2cli:
 
     def _search(self, params: list = []):
         self._clear()
-        search_options = {"limit": 10}
+        search_options = {"limit": 10, "type": "both"}
+        v_types = ["short", "long", "both"]
 
         # key : type
-        search_allowed_options = {"--limit": int}
+        search_allowed_options = {"--limit": int, "--type": str}
 
         search_params_parser = Params(search_allowed_options, params)
 
         search_options = search_options | search_params_parser.get_params_with_values()
 
-        queryStr = " ".join(search_params_parser.get_normal_strings())
+        query_str = " ".join(search_params_parser.get_normal_strings())
 
         if search_options["limit"] > 100:
             print("Invalid Limit , The max is 100")
             return
 
-        if not queryStr:
+        if search_options.get("type") and search_options["type"] not in v_types:
+            print("Invalid Video Type , Available Types: " + " | ".join(v_types))
+
+            return
+        if not query_str:
             print("Query String Is Required")
             return
 
-        self.lastQueury = [queryStr, search_options["limit"]]
+        self.lastQueury = [query_str, search_options["limit"]]
         print(" Now Loading...")
-        videos = self.backend.search(queryStr, search_options)
+        videos = self.backend.search(query_str, search_options)
         self._clear()
 
         print(
             "*" * 10
-            + f" Search Results For: {queryStr} , Limit = {search_options['limit']} "
+            + f" Search Results For: {query_str} , Limit = {search_options['limit']} , type = {search_options['type']}"
             + "*" * 10
         )
         self.videos = list(videos.values())
@@ -149,9 +154,9 @@ class Yt2cli:
         for i, target in enumerate(self.videos):
             target["id"] = i
 
-        resultsView = Results(self.videos)
+        results_view = Results(self.videos)
         print(" Now Showing ...")
-        resultsView.print_video_cards()
+        results_view.print_video_cards()
 
     def _load(self, params: list = []):
         if not params or len(params) == 0:

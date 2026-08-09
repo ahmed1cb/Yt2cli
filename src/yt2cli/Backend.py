@@ -16,8 +16,8 @@ class Backend:
     def search(self, query: str, options: dict) -> dict:
 
         limit = options["limit"]
-
-        queryKey = f"{query}x{limit}"
+        type = options["type"]
+        queryKey = f"{query}x{limit}x{type}"
 
         final_results = {}
         ydl_opts = {
@@ -34,16 +34,37 @@ class Backend:
                 info = ydl.extract_info(search_query, download=False)
                 entries = info.get("entries", [])
                 for entry in entries:
-                    final_results[entry.get("id")] = {
+                    duration_seconds = int(entry.get("duration") or 0)
+
+                    base_data = {
                         "id": entry.get("id"),
                         "title": entry.get("title"),
                         "url": entry.get("url"),
                         "channel": entry.get("channel") or entry.get("uploader"),
                         "views": self._parse_views(entry.get("view_count")),
                         "thumbnail": self._get_thumbnail(entry),
-                        "duration": self._parse_duration(entry.get("duration")),
-                        "is_short": int(entry.get("duration", "0")) <= 60,
+                        "duration": self._parse_duration(duration_seconds),
                     }
+
+                    if type == "long":
+                        if duration_seconds > 60:
+                            final_results[entry.get("id")] = {
+                                **base_data,
+                                "is_short": False,
+                            }
+
+                    elif type == "short":
+                        if duration_seconds <= 60:
+                            final_results[entry.get("id")] = {
+                                **base_data,
+                                "is_short": True,
+                            }
+
+                    else:
+                        final_results[entry.get("id")] = {
+                            **base_data,
+                            "is_short": duration_seconds <= 60,
+                        }
         self.cache[queryKey] = final_results
         return final_results
 

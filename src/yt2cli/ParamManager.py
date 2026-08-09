@@ -9,9 +9,8 @@ class Params:
         strs = []
         params = self.params
         for param in params:
-            for option in list(self.options.keys()):
-                if not param.startswith(option):
-                    strs.append(param)
+            if not any(param.startswith(option) for option in self.options):
+                strs.append(param)
         return strs
 
     def get_params_with_values(self) -> dict:
