@@ -1,4 +1,5 @@
 # Required Modules
+import math
 import platform
 import subprocess
 
@@ -38,9 +39,19 @@ class Backend:
                         "channel": entry.get("channel") or entry.get("uploader"),
                         "views": self._parse_views(entry.get("view_count")),
                         "thumbnail": self._get_thumbnail(entry),
+                        "duration": self._parse_duration(entry.get("duration")),
                     }
         self.cache[queryKey] = final_results
         return final_results
+
+    def _parse_duration(self, seconds: int) -> str:
+        seconds = int(seconds)
+        hrs, remainder = divmod(seconds, 3600)
+        mins, secs = divmod(remainder, 60)
+
+        if hrs > 0:
+            return f"{hrs}:{mins:02d}:{secs:02d}"
+        return f"{mins}:{secs:02d}"
 
     def _get_thumbnail(self, entry):
         thumbnails = entry.get("thumbnails")

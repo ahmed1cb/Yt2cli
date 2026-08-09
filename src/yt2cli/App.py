@@ -160,13 +160,15 @@ class Yt2cli:
         title = video.get("title") or "Untitled"
         channel = video.get("channel") or "Unknown"
         views = video.get("views") or "-"
+        duration = video.get("duration")
         vid = video.get("id")
 
         info_lines = [
             f"\033[1m[{vid}] {self._truncate(title, 45)}\033[0m",
             "",
-            f"  📺  {self._truncate(channel, 40)}",
-            f"  👁   {views} views",
+            f"      {self._truncate(channel, 40)}",
+            f"      {views} views",
+            f"      {duration} duration",
         ]
 
         img_lines = []
