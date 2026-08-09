@@ -207,9 +207,22 @@ class Yt2cli:
 
     def _load(self, params: list = []):
         if not params or len(params) == 0:
-            print("Id Is Required")
+            print("Params Are Required")
             return
+        video_native_url = ""
+        for param in params:
+            if param.startswith("--url"):
+                video_native_url = param[param.index("=") + 1 :]
 
+        player = Player()
+        try:
+            player.play(video_native_url)
+
+        except:
+            print("Something Went Wrong While Trying to Open the Video")
+            return
+        if video_native_url:
+            return
         try:
             id = int(params[0])
         except ValueError:
@@ -226,7 +239,6 @@ class Yt2cli:
             print("Video With That id Wasnt Found Please Try Again")
 
         url = target["url"]
-        player = Player()
 
         player.play(url)
 
