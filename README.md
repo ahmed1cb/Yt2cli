@@ -86,16 +86,38 @@ This launches an interactive prompt. Type a command and press Enter.
 Yt2Cli Run: search python tutorial
 ********** Search Results For: python tutorial , Limit= 10 **********
  ──────────────────────────────────────────────────────────────
-  Python Basics for Beginners
-  ID       : 0
-  Channel  : Programming Academy
-  Views    : 2.34M
+ ┌─────────────── block art ───────────────┐  [0] Python Basics for Beginners
+ │ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+ │ ░░░░░░ ░░ ░ ░  ░░   ░  ░░░ ░░░ ░░ ░░░  │  📺  Programming Academy
+ │ ░ ░░░░ ░ ░░ ░ ░ ░░ ░ ░░ ░ ░░░ ░ ░░░░░  │  👁   2.34M views
+ │ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+ └─────────────────────────────────────────┘
  ──────────────────────────────────────────────────────────────
 
-# The id here is not the id of the video its the video index on the list
+# The number in [brackets] is the video's index in the list (used by `open`/`download`), not the YouTube video ID
 
 Yt2Cli Run: open 0
 ```
+
+### Video Card Layout
+
+Each search result is printed as a card:
+
+```
+ ──────────────────────────────────────────────────────────────
+ ┌─────────────── block art ───────────────┐  [0] Python Basics for Beginners
+ │ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+ │ ░░░░░░ ░░ ░ ░  ░░   ░  ░░░ ░░░ ░░ ░░░  │  📺  Programming Academy
+ │ ░ ░░░░ ░ ░░ ░ ░ ░░ ░ ░░ ░ ░░░ ░ ░░░░░  │  👁   2.34M views
+ │ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+ └─────────────────────────────────────────┘
+ ──────────────────────────────────────────────────────────────
+```
+
+- The card is bounded by a horizontal line (`─`)
+- **Left side:** the video thumbnail rendered as terminal block/pixel art (~40 columns wide) via `term-image`
+- **Right side:** the bold `[index] Title` (truncated to 45 chars), the channel with 📺 (truncated to 40 chars), and the view count with 👁, formatted with `K`/`M`/`B` suffixes
+- The `[index]` is the card's position in the loaded list — the number you pass to `open <id>` or `download <id>`
 
 You can also play a video directly by URL, without searching first:
 
