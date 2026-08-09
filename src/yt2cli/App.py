@@ -125,7 +125,7 @@ class Yt2cli:
             if param.startswith("--limit"):
                 try:
                     limit = int(param[param.index("=") + 1 :])
-                    if limit > 99:
+                    if limit > 100:
                         print("Invalid Limit Param , Max Limit is 100")
                         return
                 except:
