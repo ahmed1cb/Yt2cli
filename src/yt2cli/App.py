@@ -6,7 +6,7 @@ from .Backend import Backend
 from .Player import Player
 
 # App Modules
-from .VideoCard import Card
+from .SearchResults import Results
 
 
 class Yt2cli:
@@ -148,9 +148,9 @@ class Yt2cli:
     def _list(self):
         for i, target in enumerate(self.videos):
             target["id"] = i
-            card = Card(target)
-            card.print_video_card()
-            print()  # Empty Line
+
+        resultsView = Results(self.videos)
+        resultsView.print_video_cards()
 
     def _load(self, params: list = []):
         if not params or len(params) == 0:
