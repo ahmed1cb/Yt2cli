@@ -160,7 +160,7 @@ class Yt2cli:
 
     def _load(self, params: list = []):
         if not params or len(params) == 0:
-            print("Params Are Required")
+            print("id or url Required")
             return
         video_options = {}
         video_allowed_options = {"--url": str}
@@ -178,7 +178,7 @@ class Yt2cli:
                 print("Something Went Wrong While Trying to Open the Video")
                 return
         try:
-            id = int(params[0])
+            id = int(open_parser.get_normal_strings()[0])
         except ValueError:
             print("Invalid Id , Should be a Number")
             return
@@ -198,11 +198,23 @@ class Yt2cli:
 
     def _download(self, params: list = []):
         if not params or len(params) == 0:
-            print("Id Is Required")
+            print("id or url Required")
+            return
+
+        download_options = {}
+        download_allowed_options = {"--url": str}
+
+        download_parser = Params(download_allowed_options, params)
+        download_options = download_parser.get_params_with_values()
+        if download_options.get("url"):
+            try:
+                self.backend.download(download_options["url"])
+            except:
+                print("Something Went Wrong While Trying to Download The Video ")
             return
 
         try:
-            id = int(params[0])
+            id = int(download_parser.get_normal_strings()[0])
         except ValueError:
             print("Invalid Id , Should be a Number")
             return

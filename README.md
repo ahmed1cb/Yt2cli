@@ -5,12 +5,13 @@ A simple command-line (CLI) tool for searching and playing YouTube videos direct
 ## Features
 
 - Search YouTube videos by keyword, with an optional result limit (`--limit=<n>`, default 10, max 100)
-- Results are cached per query and limit, so re-searching the same keyword is instant
+- Filter results by video type with `--type=short|long|both` (short = 60s or less, long = more than 60s)
+- Results are cached per query, limit, and type, so re-searching the same keyword is instant
 - Load more results from the last search with `more`
-- Display search results as formatted video cards (title, ID, channel, views with `K`/`M`/`B` suffix) with the video thumbnail rendered as block/pixel art
+- Display search results as formatted video cards (title, channel, views with `K`/`M`/`B` suffix, duration, and short/long badge) with the video thumbnail rendered as block/pixel art; cards flow into a responsive multi-column grid based on terminal width
 - Play any video from the list through [mpv](https://mpv.io), falling back to the system's default application if mpv isn't installed
 - Play a video directly by URL without searching: `open --url=<youtube-url>`
-- Download videos directly to a folder you pick (native folder dialog per OS)
+- Download videos directly to a folder you pick (native folder dialog per OS), including direct URLs: `download --url=<youtube-url>`
 - Clear the in-memory cache and the loaded list with `reset` or `cache:clear`
 - Any unrecognized command is treated as a search query
 - Cross-platform: works on Windows, macOS, and Linux
@@ -50,18 +51,18 @@ This launches an interactive prompt. Type a command and press Enter.
 
 ## Available Commands
 
-| Command          | Description                                                                                   |
-| ---------------- | --------------------------------------------------------------------------------------------- |
-| `search <query>` | Search YouTube videos (`--limit=<n>` optional)                                                |
-| `list`           | Show the currently loaded videos from the last search                                         |
-| `open <id>`      | Play a video from the list by its number; use `open --url=<youtube-url>` to play a direct URL |
-| `download <id>`  | Download a video from the list to a folder you choose                                         |
-| `more`           | Load more videos from the last search (adds 5 more results)                                   |
-| `reset`          | Clear the loaded video list and the backend cache                                             |
-| `cache:clear`    | Remove the cached search results only                                                         |
-| `clear`          | Clear the terminal screen                                                                     |
-| `help`           | Show a list of available commands                                                             |
-| `exit`           | Close the app                                                                                 |
+| Command          | Description                                                                                                |
+| ---------------- | ---------------------------------------------------------------------------------------------------------- |
+| `search <query>` | Search YouTube videos (`--limit=<n>`, `--type=short\|long\|both` optional)                                 |
+| `list`           | Show the currently loaded videos from the last search                                                      |
+| `open <id>`      | Play a video from the list by its number; use `open --url=<youtube-url>` to play a direct URL              |
+| `download <id>`  | Download a video from the list to a folder you choose; use `download --url=<youtube-url>` for a direct URL |
+| `more`           | Load more videos from the last search (adds 5 more results)                                                |
+| `reset`          | Clear the loaded video list and the backend cache                                                          |
+| `cache:clear`    | Remove the cached search results only                                                                      |
+| `clear`          | Clear the terminal screen                                                                                  |
+| `help`           | Show a list of available commands                                                                          |
+| `exit`           | Close the app                                                                                              |
 
 > **Note:** Any input that isn't a recognized command is treated as a search query.
 
@@ -83,14 +84,14 @@ This launches an interactive prompt. Type a command and press Enter.
   [download]  Download A Youtube Video
 ==================================================
 
-Yt2Cli Run: search python tutorial
-********** Search Results For: python tutorial , Limit= 10 **********
+Yt2Cli Run: search python tutorial --type=both
+********** Search Results For: python tutorial , Limit = 10 , type = both**********
  ──────────────────────────────────────────────────────────────
  ┌─────────────── block art ───────────────┐  [0] Python Basics for Beginners
- │ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
- │ ░░░░░░ ░░ ░ ░  ░░   ░  ░░░ ░░░ ░░ ░░░  │  📺  Programming Academy
- │ ░ ░░░░ ░ ░░ ░ ░ ░░ ░ ░░ ░ ░░░ ░ ░░░░░  │  👁   2.34M views
- │ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+ │ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │      Programming Academy
+ │ ░░░░░░ ░░ ░ ░  ░░   ░  ░░░ ░░░ ░░ ░░░  │      2.34M views
+ │ ░ ░░░░ ░ ░░ ░ ░ ░░ ░ ░░ ░ ░░░ ░ ░░░░░  │      18:42 duration
+ │ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │      long video
  └─────────────────────────────────────────┘
  ──────────────────────────────────────────────────────────────
 
@@ -106,17 +107,18 @@ Each search result is printed as a card:
 ```
  ──────────────────────────────────────────────────────────────
  ┌─────────────── block art ───────────────┐  [0] Python Basics for Beginners
- │ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
- │ ░░░░░░ ░░ ░ ░  ░░   ░  ░░░ ░░░ ░░ ░░░  │  📺  Programming Academy
- │ ░ ░░░░ ░ ░░ ░ ░ ░░ ░ ░░ ░ ░░░ ░ ░░░░░  │  👁   2.34M views
- │ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+ │ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │      Programming Academy
+ │ ░░░░░░ ░░ ░ ░  ░░   ░  ░░░ ░░░ ░░ ░░░  │      2.34M views
+ │ ░ ░░░░ ░ ░░ ░ ░ ░░ ░ ░░ ░ ░░░ ░ ░░░░░  │      18:42 duration
+ │ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │      long video
  └─────────────────────────────────────────┘
  ──────────────────────────────────────────────────────────────
 ```
 
 - The card is bounded by a horizontal line (`─`)
 - **Left side:** the video thumbnail rendered as terminal block/pixel art (~40 columns wide) via `term-image`
-- **Right side:** the bold `[index] Title` (truncated to 45 chars), the channel with 📺 (truncated to 40 chars), and the view count with 👁, formatted with `K`/`M`/`B` suffixes
+- **Right side:** the bold `[index] Title` (truncated to 45 chars), the channel (truncated to 40 chars), the view count formatted with `K`/`M`/`B` suffixes, the video duration, and a `short`/`long` badge
+- Cards are laid out in a responsive grid — as many cards per row as the terminal width allows, and each card is padded so columns align
 - The `[index]` is the card's position in the loaded list — the number you pass to `open <id>` or `download <id>`
 
 You can also play a video directly by URL, without searching first:
@@ -131,20 +133,24 @@ Yt2Cli Run: open --url=https://www.youtube.com/watch?v=id
 yt2cli/
 ├── src/
 │   └── yt2cli/
-│       ├── __init__.py     # App export entry point
-│       ├── App.py          # Core logic and command handling
-│       ├── Backend.py      # Search logic (yt-dlp) and result caching
-│       ├── Player.py       # Video playback (mpv with system fallback)
-│       └── cli.py          # Interactive REPL entry point
+│       ├── __init__.py      # App export entry point
+│       ├── App.py           # Core logic and command handling
+│       ├── Backend.py       # Search logic (yt-dlp), result caching, and downloads
+│       ├── ParamManager.py  # Parses `--option=value` arguments for commands
+│       ├── Player.py        # Video playback (mpv with system fallback)
+│       ├── SearchResults.py # Renders the video cards and thumbnail block art
+│       └── cli.py           # Interactive REPL entry point
 ```
 
 ## Notes
 
 - The app uses [yt-dlp](https://github.com/yt-dlp/yt-dlp) to search and extract video playback URLs.
-- Search results are cached per query and limit in memory; playing a video re-resolves the stream URL with yt-dlp.
+- Search results are cached per query, limit, and type in memory; playing a video re-resolves the stream URL with yt-dlp.
+- `--type=short|long|both` filters results by duration: `short` videos are 60 seconds or less, `long` videos are more than 60 seconds, `both` returns everything.
 - `more` re-searches the last query with a higher limit (adds 5 results each time).
 - `download <id>` opens a native folder-picker dialog (zenity on Linux, osascript on macOS, PowerShell on Windows) and saves the video with `yt-dlp`.
 - `open --url=<youtube-url>` plays any video directly by URL, without needing to search for it first.
+- `download --url=<youtube-url>` downloads any video directly by URL, without needing to search for it first.
 
 ## License
 
