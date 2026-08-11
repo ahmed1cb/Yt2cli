@@ -2,6 +2,8 @@
 import os
 import sys
 
+import pyperclip
+
 # App Modules
 from .Backend import Backend
 from .ParamManager import Params
@@ -13,6 +15,10 @@ class Yt2cli:
     def __init__(self) -> None:
         self._clear()
         self.options = {
+            "copy": {
+                "desc": "Use it to Copy the Youtube Video Url, Id Required",
+                "_callable": self._copy,
+            },
             "search": {
                 "desc": "Use it To Search for Youtube Videos , usage: search :query \:limits",
                 "_callable": self._search,
@@ -65,12 +71,35 @@ class Yt2cli:
             return
         self._clear()  # Clear Terminal
         query_str = self.lastQueury[0]
-        limit = self.lastQueury[1]
-        self.lastQueury[1] = limit + 5
+        options = self.lastQueury[1]
+
+        options["limit"] = options["limit"] + 5
         print(" Now Loading...")
-        new_vids = list(self.backend.search(query_str, limit + 5).values())
+        new_vids = list(self.backend.search(query_str, options).values())
         self.videos = new_vids
         self._list()
+
+    def _copy(self, params):
+
+        parser = Params({}, params)
+        strs = parser.get_normal_strings()
+        if len(strs) == 0:
+            print("id is Required")
+            return
+        target = None
+        try:
+            id = int(strs[0])
+            target = self.videos[id]
+        except:
+            print("Invalid Id Or Id not in the Videos List")
+            return
+
+        if not target:
+            return
+
+        pyperclip.copy(target["url"])
+
+        print("Copied Successfully")
 
     def _clear_cache(self):
         self.backend.clear_cache()
@@ -105,8 +134,8 @@ class Yt2cli:
         print("=" * 50)
 
         for option in self.options:
-            desc = self.options.get(option)["desc"]
-            print(f"  [{option}]  {desc}")
+            desc = self.options[option]["desc"]
+            print(f"  [{option}] {desc}")
 
         print("=" * 50)
 
@@ -130,20 +159,27 @@ class Yt2cli:
 
         if search_options.get("type") and search_options["type"] not in v_types:
             print("Invalid Video Type , Available Types: " + " | ".join(v_types))
-
             return
+
         if not query_str:
-            print("Query String Is Required")
+            print("Type Something To search")
             return
 
-        self.lastQueury = [query_str, search_options["limit"]]
+        self.lastQueury = [query_str, search_options]
+
         print(" Now Loading...")
         videos = self.backend.search(query_str, search_options)
         self._clear()
 
+        applied_opts_str = " ".join(
+            [
+                f"{option_name} = {search_options[option_name]}"
+                for option_name in list(search_options)
+            ]
+        )
         print(
             "*" * 10
-            + f" Search Results For: {query_str} , Limit = {search_options['limit']} , type = {search_options['type']}"
+            + f" Search Results For: {query_str} , {applied_opts_str} "
             + "*" * 10
         )
         self.videos = list(videos.values())
@@ -213,20 +249,13 @@ class Yt2cli:
                 print("Something Went Wrong While Trying to Download The Video ")
             return
 
+        target = None
         try:
             id = int(download_parser.get_normal_strings()[0])
-        except ValueError:
-            print("Invalid Id , Should be a Number")
+            target = self.videos[id]
+        except:
+            print("Invalid Id , Or Not in the Videos List")
             return
-
-        if id >= len(self.videos) or id < 0:
-            print("Invalid Id, Should Be in the List of the Videos ")
-            return
-
-        target = self.videos[id]
-
-        if target is None:
-            print("Video With That id Wasnt Found Please Try Again")
 
         url = target["url"]
         self.backend.download(url)

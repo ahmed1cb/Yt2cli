@@ -229,6 +229,18 @@ typing = ["typing-extensions ; python_version < \"3.10\""]
 xmp = ["defusedxml"]
 
 [[package]]
+name = "pyperclip"
+version = "1.11.0"
+description = "A cross-platform clipboard module for Python. (Only handles plain text for now.)"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "pyperclip-1.11.0-py3-none-any.whl", hash = "sha256:299403e9ff44581cb9ba2ffeed69c7aa96a008622ad0c46cb575ca75b5b84273"},
+    {file = "pyperclip-1.11.0.tar.gz", hash = "sha256:244035963e4428530d9e3a6101a1ef97209c6825edab1567beac148ccc1db1b6"},
+]
+
+[[package]]
 name = "requests"
 version = "2.34.2"
 description = "Python HTTP for Humans."
@@ -309,4 +321,4 @@ secretstorage = ["secretstorage"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "ae803f53a383927c1e1b0d102aceb56b1e40443bed4c2cb9881d67de01a8066c"
+content-hash = "cda77ada3bf0c04801a802fb3a0d37f3f044de648908106b559443d601930f18"
