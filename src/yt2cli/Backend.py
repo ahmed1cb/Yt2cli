@@ -9,6 +9,7 @@ import yt_dlp
 class Backend:
     def __init__(self):
         self.cache = {}
+        self.output_path = None
 
     def is_valid_url(self, url):
         result = urlparse(url)
@@ -109,7 +110,7 @@ class Backend:
                 return txt["runs"][0]["text"]
 
     def download(self, stream_url):
-        output_path = self.open_dialog()
+        output_path = self.output_path or self.open_dialog()
         ydl_opts = {
             "format": "best",  # 'best' usually selects the best quality stream available
             "outtmpl": f"{output_path}/%(title)s.%(ext)s",
@@ -117,6 +118,7 @@ class Backend:
             "paths": {
                 "home": output_path,
             },
+            "downloader_args": {"ffmpeg": ["-loglevel", "error"]},
         }
 
         print(f"Download Started On: {output_path}")
@@ -140,7 +142,8 @@ class Backend:
                 capture_output=True,
                 text=True,
             )
-            return result.stdout.strip()
+
+            self.output_path = result.stdout.strip()
 
         elif system == "Darwin":  # macOS
             result = subprocess.run(
@@ -152,7 +155,7 @@ class Backend:
                 capture_output=True,
                 text=True,
             )
-            return result.stdout.strip()
+            self.output_path = result.stdout.strip()
 
         elif system == "Windows":
             ps_script = """
@@ -164,4 +167,7 @@ class Backend:
             result = subprocess.run(
                 ["powershell", "-Command", ps_script], capture_output=True, text=True
             )
-            return result.stdout.strip()
+
+            self.output_path = result.stdout.strip()
+
+        return self.output_path

@@ -242,6 +242,7 @@ class Yt2cli:
 
         download_parser = Params(download_allowed_options, params)
         download_options = download_parser.get_params_with_values()
+
         if download_options.get("url"):
             try:
                 self.backend.download(download_options["url"])
@@ -249,16 +250,20 @@ class Yt2cli:
                 print("Something Went Wrong While Trying to Download The Video ")
             return
 
-        target = None
-        try:
-            id = int(download_parser.get_normal_strings()[0])
-            target = self.videos[id]
-        except:
-            print("Invalid Id , Or Not in the Videos List")
+        targets = []
+
+        for id in download_parser.get_normal_strings():
+            try:
+                targets.append(self.videos[int(id)])
+            except:
+                print(f"Cant Find Video with id {id}")
+        if len(targets) == 0:
+            print("Nothing to Download")
             return
 
-        url = target["url"]
-        self.backend.download(url)
+        for target in targets:
+            url = target["url"]
+            self.backend.download(url)
 
     def _clear(self):
         os.system("cls" if os.name == "nt" else "clear")

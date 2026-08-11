@@ -55,7 +55,7 @@ class Results:
             f"      {self._truncate(channel, 40)}",
             f"      {views} views",
             f"      {duration} duration",
-            f"      {'short' if is_short else 'long'} video",
+            f"      {'Short' if is_short else 'Normal'} video",
         ]
 
         img_lines = []
