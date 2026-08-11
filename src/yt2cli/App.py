@@ -14,6 +14,8 @@ from .SearchResults import Results
 class Yt2cli:
     def __init__(self) -> None:
         self._clear()
+        player = Player()
+        self.player = player
         self.options = {
             "copy": {
                 "desc": "Use it to Copy the Youtube Video Url, Id Required",
@@ -115,13 +117,18 @@ class Yt2cli:
 
         params = args[1:]
 
-        targetOption = self.options.get(command)
+        target_option = self.options.get(command)
         # Now the Search is the Default Option
-        if targetOption is None:
+
+        if target_option is None:
+            if self.backend.is_valid_url(command) and "youtube.com/watch" in command:
+                self.player.play(command)
+                return
             params.insert(0, command)
             self._search(params)
             return
-        targetOption.get("_callable")(params)
+        callable = target_option.get("_callable")
+        callable(params)
 
     def show_options(self):
         print("=" * 50)
@@ -199,11 +206,9 @@ class Yt2cli:
 
         video_options = video_options | open_parser.get_params_with_values()
 
-        player = Player()
-
         if video_options.get("url"):
             try:
-                player.play(video_options["url"])
+                self.player.play(video_options["url"])
                 return
             except:
                 print("Something Went Wrong While Trying to Open the Video")

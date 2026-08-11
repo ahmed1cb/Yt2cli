@@ -1,7 +1,7 @@
 # Required Modules
-import math
 import platform
 import subprocess
+from urllib.parse import urlparse
 
 import yt_dlp
 
@@ -9,6 +9,10 @@ import yt_dlp
 class Backend:
     def __init__(self):
         self.cache = {}
+
+    def is_valid_url(self, url):
+        result = urlparse(url)
+        return all([result.scheme, result.netloc])
 
     def clear_cache(self):
         self.cache = {}
