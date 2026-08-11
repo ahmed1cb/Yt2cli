@@ -19,10 +19,6 @@ class Yt2cli:
                 "desc": "Use it to Copy the Youtube Video Url, Id Required",
                 "_callable": self._copy,
             },
-            "search": {
-                "desc": "Use it To Search for Youtube Videos , usage: search :query \:limits",
-                "_callable": self._search,
-            },
             "open": {
                 "desc": "Use It to Open A video From the List of Searched Videos",
                 "_callable": self._load,
@@ -80,7 +76,6 @@ class Yt2cli:
         self._list()
 
     def _copy(self, params):
-
         parser = Params({}, params)
         strs = parser.get_normal_strings()
         if len(strs) == 0:
