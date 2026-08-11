@@ -1,4 +1,5 @@
 # Python Modules
+import readline
 import sys
 
 # App Modules
