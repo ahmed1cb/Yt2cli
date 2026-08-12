@@ -2,6 +2,10 @@ class Params:
     def __init__(self, options: dict, params: list) -> None:
         self.options = options
         self.params = params
+        self._failed = False
+
+    def failed(self):
+        return self._failed
 
     def get_normal_strings(
         self,
@@ -25,6 +29,7 @@ class Params:
                             print(
                                 f"Invalid Usage for Parameter {option}, Usage: --{option}={self.options[option].__name__}"
                             )
+                            self._failed = True
                             return {}
                         value = self.options[option](param[eq_idx + 1 :])
                         results[option.replace("--", "")] = value
@@ -33,5 +38,6 @@ class Params:
                         print(
                             f"Invalid Value For {option}. Should be {self.options[option].__name__} , Usage:  {option}={self.options[option].__name__}"
                         )
+                        self._failed = True
                         return {}
         return results

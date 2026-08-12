@@ -29,7 +29,7 @@ class Yt2cli:
                 "desc": "Clear The Terminal Screen",
                 "_callable": lambda x=0: self._clear(),
             },
-            "list": {
+            "show": {
                 "desc": "Show The Current Loaded Videos",
                 "_callable": lambda x=0: self._list(),
             },
@@ -59,7 +59,7 @@ class Yt2cli:
             },
         }
         self.videos = []
-        self.lastQueury = []  # [query , limit]
+        self.lastQueury = []  # [query , options]
         self.backend = Backend()
         self.show_options()
 
@@ -143,14 +143,17 @@ class Yt2cli:
 
     def _search(self, params: list = []):
         self._clear()
-        search_options = {"limit": 10, "type": "both"}
+        search_options = {"limit": 10, "type": "both", "thumbs": "yes"}
         v_types = ["short", "long", "both"]
+        th_opts = ["yes", "no", "false", "true"]
 
         # key : type
-        search_allowed_options = {"--limit": int, "--type": str}
+        search_allowed_options = {"--limit": int, "--type": str, "--thumbs": str}
 
         search_params_parser = Params(search_allowed_options, params)
 
+        if search_params_parser.failed():
+          return
         search_options = search_options | search_params_parser.get_params_with_values()
 
         query_str = " ".join(search_params_parser.get_normal_strings())
@@ -165,6 +168,9 @@ class Yt2cli:
 
         if not query_str:
             print("Type Something To search")
+            return
+        if search_options["thumbs"].lower() not in th_opts:
+            print("--thumbs can only Recive " + " / ".join(th_opts))
             return
 
         self.lastQueury = [query_str, search_options]

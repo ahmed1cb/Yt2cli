@@ -22,8 +22,9 @@ class Backend:
 
         limit = options["limit"]
         type = options["type"]
-        queryKey = f"{query}x{limit}x{type}"
-
+        get_thumbnails = options["thumbs"]
+        opts = "_".join([f"{o}={options[o]}" for o in list(options.keys())])
+        queryKey = f"{query.strip().strip(' ')}_{opts}"
         final_results = {}
         ydl_opts = {
             "quiet": True,
@@ -47,8 +48,10 @@ class Backend:
                         "url": entry.get("url"),
                         "channel": entry.get("channel") or entry.get("uploader"),
                         "views": self._parse_views(entry.get("view_count")),
-                        "thumbnail": self._get_thumbnail(entry),
                         "duration": self._parse_duration(duration_seconds),
+                        "thumbnail": self._get_thumbnail(entry)
+                        if get_thumbnails.lower() in ["yes", "true"]
+                        else None,
                     }
 
                     if type == "long":
@@ -70,6 +73,7 @@ class Backend:
                             **base_data,
                             "is_short": duration_seconds <= 60,
                         }
+
         self.cache[queryKey] = final_results
         return final_results
 

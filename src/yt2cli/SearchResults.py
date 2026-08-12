@@ -61,14 +61,20 @@ class Results:
         img_lines = []
         if video.get("thumbnail"):
             img = self._get_image(video["thumbnail"])
-            img_lines = str(img).split("\n")
+            if img:
+                img_lines = str(img).split("\n")
+
+        if not img_lines:
+            img_lines = self._placeholder_image_lines(height=len(info_lines))
 
         merged = self._merge_side_by_side(img_lines, info_lines)
-
         content_width = max((self._visible_len(l) for l in merged), default=0)
         separator = "─" * content_width
-
         return [separator] + merged + [separator]
+
+    def _placeholder_image_lines(self, height, width=30):
+        blank = "-" * width
+        return [blank] * height
 
     def _merge_side_by_side(self, left_lines, right_lines, gap=3):
         img_width = max((self._visible_len(l) for l in left_lines), default=0)
@@ -92,4 +98,8 @@ class Results:
         return text if len(text) <= max_len else text[: max_len - 1] + "…"
 
     def _get_image(self, path: str):
-        return BlockImage.from_url(path, width=40)
+        try:
+            return BlockImage.from_url(path, width=40)
+        except:
+            print("Failed to Load Video Thumnail")
+            return None
