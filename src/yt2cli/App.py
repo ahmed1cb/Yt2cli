@@ -31,7 +31,7 @@ class Yt2cli:
             },
             "show": {
                 "desc": "Show The Current Loaded Videos",
-                "_callable": lambda x=0: self._list(),
+                "_callable": lambda x=0: self._show(),
             },
             "exit": {
                 "desc": "Close the App",
@@ -75,7 +75,7 @@ class Yt2cli:
         print(" Now Loading...")
         new_vids = list(self.backend.search(query_str, options).values())
         self.videos = new_vids
-        self._list()
+        self._show()
 
     def _copy(self, params):
         parser = Params({}, params)
@@ -192,9 +192,9 @@ class Yt2cli:
         )
         self.videos = list(videos.values())
 
-        self._list()
+        self._show()
 
-    def _list(self):
+    def _show(self):
         for i, target in enumerate(self.videos):
             target["id"] = i
 

@@ -1,6 +1,6 @@
 [project]
 name = "yt2cli"
-version = "0.2.5"
+version = "0.2.6"
 description = "Access To Youtube Easly From Your Terminal"
 authors = [
     {name = "Ahmed Hassan",email = "ah8438263@gmail.com"}
