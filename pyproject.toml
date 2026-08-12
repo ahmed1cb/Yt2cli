@@ -1,6 +1,6 @@
 [project]
 name = "yt2cli"
-version = "0.2.6"
+dynamic = ["version"]
 description = "Access To Youtube Easly From Your Terminal"
 authors = [
     {name = "Ahmed Hassan",email = "ah8438263@gmail.com"}
@@ -16,9 +16,10 @@ dependencies = [
 [project.scripts]
 yt2cli = "yt2cli.cli:main"
 
-[tool.poetry]
-packages = [{include = "yt2cli", from = "src"}]
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools>=64", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+[tool.setuptools_scm]
