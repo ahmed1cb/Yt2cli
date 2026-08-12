@@ -153,7 +153,7 @@ class Yt2cli:
         search_params_parser = Params(search_allowed_options, params)
 
         if search_params_parser.failed():
-          return
+            return
         search_options = search_options | search_params_parser.get_params_with_values()
 
         query_str = " ".join(search_params_parser.get_normal_strings())
@@ -207,7 +207,9 @@ class Yt2cli:
             print("id or url Required")
             return
         video_options = {}
-        video_allowed_options = {"--url": str}
+        video_allowed_options = {
+            "--url": str,
+        }
         open_parser = Params(video_allowed_options, params)
 
         video_options = video_options | open_parser.get_params_with_values()
@@ -219,24 +221,17 @@ class Yt2cli:
             except:
                 print("Something Went Wrong While Trying to Open the Video")
                 return
+        target = {}
         try:
             id = int(open_parser.get_normal_strings()[0])
-        except ValueError:
-            print("Invalid Id , Should be a Number")
+            target = self.videos[id]
+        except:
+            print("Invalid Id or not on the Saved Videos")
             return
 
-        if id >= len(self.videos) or id < 0:
-            print("Invalid Id, Should Be in the List of the Videos ")
-            return
+        url = target.get("url")
 
-        target = self.videos[id]
-
-        if target is None:
-            print("Video With That id Wasnt Found Please Try Again")
-
-        url = target["url"]
-
-        player.play(url)
+        self.player.play(url)
 
     def _download(self, params: list = []):
         if not params or len(params) == 0:

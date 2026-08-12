@@ -8,7 +8,7 @@ A simple command-line (CLI) tool for searching and playing YouTube videos direct
 - Filter results by video type with `--type=short|long|both` (short = 60s or less, long = more than 60s)
 - Results are cached per query, limit, and type, so re-searching the same keyword is instant
 - Load more results from the last search with `more`
-- Display search results as formatted video cards (title, channel, views with `K`/`M`/`B` suffix, duration, and Short/Normal badge) with the video thumbnail rendered as block/pixel art; cards flow into a responsive multi-column grid based on terminal width
+- Display search results as formatted video cards (title, channel, views with `K`/`M`/`B` suffix, duration, and Short/Normal badge) with the video thumbnail rendered as block/pixel art; cards flow into a responsive multi-column grid based on terminal width. Disable thumbnail rendering with `--thumbs=no` for faster results
 - Play any video from the list through [mpv](https://mpv.io), falling back to the system's default application if mpv isn't installed
 - Play a video directly by URL without searching: `open --url=<youtube-url>`
 - Type a YouTube URL directly at the prompt to play it automatically, no command needed
@@ -56,7 +56,7 @@ This launches an interactive prompt. Type a command and press Enter.
 
 | Command         | Description                                                                                                                 |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `list`          | Show the currently loaded videos from the last search                                                                       |
+| `show`          | Show the currently loaded videos from the last search                                                                       |
 | `open <id>`     | Play a video from the list by its number; use `open --url=<youtube-url>` to play a direct URL                               |
 | `download <id>` | Download one or more videos from the list (`download <id1> <id2> ...`); use `download --url=<youtube-url>` for a direct URL |
 | `copy <id>`     | Copy the URL of a video from the list to the clipboard                                                                      |
@@ -78,7 +78,7 @@ This launches an interactive prompt. Type a command and press Enter.
   [copy]  Use it to Copy the Youtube Video Url, Id Required
   [open]  Use It to Open A video From the List of Searched Videos
   [clear]  Clear The Terminal Screen
-  [list]  Show The Current Loaded Videos
+  [show]  Show The Current Loaded Videos
   [exit]  Close the App
   [help]  Show A List of Available Commands
   [reset]  Remove The Saved Search And Backend Cache
@@ -156,6 +156,7 @@ yt2cli/
 - The app uses [yt-dlp](https://github.com/yt-dlp/yt-dlp) to search and extract video playback URLs.
 - Search results are cached per query, limit, and type in memory; playing a video re-resolves the stream URL with yt-dlp.
 - `--type=short|long|both` filters results by duration: `short` videos are 60 seconds or less, `long` videos are more than 60 seconds, `both` returns everything.
+- `--thumbs=yes|no` (also accepts `true`/`false`) toggles whether search results render the video thumbnail as block art; `no` skips fetching thumbnails for faster results.
 - `more` re-searches the last query with a higher limit (adds 5 results each time).
 - `download <id>` opens a native folder-picker dialog (zenity on Linux, osascript on macOS, PowerShell on Windows) and saves the video with `yt-dlp`. It accepts multiple ids at once: `download 0 2 5`.
 - `copy <id>` copies the video's URL to the clipboard via `pyperclip`.
