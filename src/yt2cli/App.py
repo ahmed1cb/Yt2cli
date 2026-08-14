@@ -17,6 +17,10 @@ class Yt2cli:
         player = Player()
         self.player = player
         self.options = {
+            "channel": {
+                "desc": "Get Channel Videos, Usage channel :channeluser // the unique channel user",
+                "_callable": self._get_channel_videos,
+            },
             "copy": {
                 "desc": "Use it to Copy the Youtube Video Url, Id Required",
                 "_callable": self._copy,
@@ -76,6 +80,30 @@ class Yt2cli:
         new_vids = list(self.backend.search(query_str, options).values())
         self.videos = new_vids
         self._show()
+
+    def _get_channel_videos(self, params):
+        channel_allowed_options = {"--thumbs": str, "--limit": int}
+        channel_options = {"limit": 10, "thumbs": "yes"}
+        parser = Params(channel_allowed_options, params)
+        channel_options = channel_options | parser.get_params_with_values()
+        if len(parser.get_normal_strings()) == 0:
+            print("Channel is required")
+            return
+        channel_name = parser.get_normal_strings()[0]
+        try:
+            self.videos = list(
+                self.backend.get_channel_videos(channel_name, channel_options).values()
+            )
+
+            if not self.videos:
+                print("No Results Found")
+                return
+            self._show()
+        except Exception as e:
+            print(
+                "Something Went Wrong , Report If You Think its a bug::::  ",
+                e,
+            )
 
     def _copy(self, params):
         parser = Params({}, params)
@@ -158,17 +186,15 @@ class Yt2cli:
 
         query_str = " ".join(search_params_parser.get_normal_strings())
 
-        if search_options["limit"] > 100:
-            print("Invalid Limit , The max is 100")
-            return
-
         if search_options.get("type") and search_options["type"] not in v_types:
             print("Invalid Video Type , Available Types: " + " | ".join(v_types))
             return
 
+        # when there is a params But no query
         if not query_str:
             print("Type Something To search")
             return
+
         if search_options["thumbs"].lower() not in th_opts:
             print("--thumbs can only Recive " + " / ".join(th_opts))
             return
@@ -176,8 +202,13 @@ class Yt2cli:
         self.lastQueury = [query_str, search_options]
 
         print(" Now Loading...")
-        videos = self.backend.search(query_str, search_options)
-        self._clear()
+
+        search_results = self.backend.search(query_str, search_options)
+
+        if type(search_results) is dict:
+            self.videos = list(search_results.values())
+        else:
+            return
 
         applied_opts_str = " ".join(
             [
@@ -190,7 +221,11 @@ class Yt2cli:
             + f" Search Results For: {query_str} , {applied_opts_str} "
             + "*" * 10
         )
-        self.videos = list(videos.values())
+
+        self._clear()
+        if len(self.videos) == 0:
+            print("No Results")
+            return
 
         self._show()
 

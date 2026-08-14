@@ -4,9 +4,10 @@ A simple command-line (CLI) tool for searching and playing YouTube videos direct
 
 ## Features
 
-- Search YouTube videos by keyword, with an optional result limit (`--limit=<n>`, default 10, max 100)
+- Search YouTube videos by keyword, with an optional result limit (`--limit=<n>`, default 10)
 - Filter results by video type with `--type=short|long|both` (short = 60s or less, long = more than 60s)
-- Results are cached per query, limit, and type, so re-searching the same keyword is instant
+- Browse a channel's videos by its YouTube handle: `channel <channeluser>` (supports `--limit=<n>` and `--thumbs=yes|no`)
+- Results are cached per query and options (limit, type, thumbs), so re-searching the same keyword is instant
 - Load more results from the last search with `more`
 - Display search results as formatted video cards (title, channel, views with `K`/`M`/`B` suffix, duration, and Short/Normal badge) with the video thumbnail rendered as block/pixel art; cards flow into a responsive multi-column grid based on terminal width. Disable thumbnail rendering with `--thumbs=no` for faster results
 - Play any video from the list through [mpv](https://mpv.io), falling back to the system's default application if mpv isn't installed
@@ -56,6 +57,7 @@ This launches an interactive prompt. Type a command and press Enter.
 
 | Command         | Description                                                                                                                 |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `channel <user>` | Browse a channel's videos by its YouTube handle (`channel <channeluser>`); supports `--limit=<n>` and `--thumbs=yes|no`     |
 | `show`          | Show the currently loaded videos from the last search                                                                       |
 | `open <id>`     | Play a video from the list by its number; use `open --url=<youtube-url>` to play a direct URL                               |
 | `download <id>` | Download one or more videos from the list (`download <id1> <id2> ...`); use `download --url=<youtube-url>` for a direct URL |
@@ -73,8 +75,9 @@ This launches an interactive prompt. Type a command and press Enter.
 
 ```
 ==================================================
-                 AVAILABLE OPTIONS
+                  AVAILABLE OPTIONS
 ==================================================
+  [channel]  Get Channel Videos, Usage channel :channeluser // the unique channel user
   [copy]  Use it to Copy the Youtube Video Url, Id Required
   [open]  Use It to Open A video From the List of Searched Videos
   [clear]  Clear The Terminal Screen
@@ -136,6 +139,12 @@ Or simply type the URL itself — it will be detected and played automatically:
 Yt2Cli Run: https://www.youtube.com/watch?v=id
 ```
 
+You can also browse a channel's videos directly by its YouTube handle:
+
+```
+Yt2Cli Run: channel MrBeast --limit=5
+```
+
 ## Project Structure
 
 ```
@@ -154,7 +163,8 @@ yt2cli/
 ## Notes
 
 - The app uses [yt-dlp](https://github.com/yt-dlp/yt-dlp) to search and extract video playback URLs.
-- Search results are cached per query, limit, and type in memory; playing a video re-resolves the stream URL with yt-dlp.
+- `channel <channeluser>` loads a channel's videos from its `/videos` tab using the channel's YouTube handle (`@handle` or just `handle`); it accepts `--limit=<n>` and `--thumbs=yes|no`, and results are cached per channel and options.
+- Search results are cached per query and options (limit, type, thumbs) in memory; playing a video re-resolves the stream URL with yt-dlp.
 - `--type=short|long|both` filters results by duration: `short` videos are 60 seconds or less, `long` videos are more than 60 seconds, `both` returns everything.
 - `--thumbs=yes|no` (also accepts `true`/`false`) toggles whether search results render the video thumbnail as block art; `no` skips fetching thumbnails for faster results.
 - `more` re-searches the last query with a higher limit (adds 5 results each time).

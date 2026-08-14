@@ -6,10 +6,65 @@ from urllib.parse import urlparse
 import yt_dlp
 
 
+class SilentLogger:
+    def debug(self, msg):
+        pass
+
+    def warning(self, msg):
+        pass
+
+    def error(self, msg):
+        pass  # يمنع الطباعة النهائية للخطأ
+
+
 class Backend:
     def __init__(self):
         self.cache = {}
         self.output_path = None
+
+    def get_channel_videos(self, channel: str, options: dict):
+        limit = options.get("limit", 10)
+        get_thumbnails = options.get("thumbs", "yes")
+        url = f"https://youtube.com/@{channel.strip().strip('@')}/videos"
+        opts = "_".join([f"{o}={options[o]}" for o in list(options.keys())])
+        cache_key = f"{url.strip().strip(' ')}_{opts}"
+
+        if self.cache.get(cache_key):
+            return self.cache[cache_key]
+
+        ydl_opts = {
+            "quiet": True,
+            "extract_flat": True,
+            "noplaylist": True,
+            "playlistend": limit,
+            "no_warnings": True,
+            "ignoreerrors": True,
+        }
+
+        results = {}
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            if info and "entries" in info:
+                for entry in info.get("entries", []):
+                    if entry is None:
+                        continue
+
+                    duration_seconds = int(entry.get("duration") or 0)
+
+                    results[entry.get("id")] = {
+                        "id": entry.get("id"),
+                        "title": entry.get("title"),
+                        "url": entry.get("url"),
+                        "channel": entry.get("channel") or entry.get("uploader"),
+                        "views": self._parse_views(entry.get("view_count", 0)),
+                        "duration": self._parse_duration(duration_seconds),
+                        "thumbnail": self._get_thumbnail(entry)
+                        if get_thumbnails.lower() in ["yes", "true"]
+                        else None,
+                        "is_short": duration_seconds <= 60,
+                    }
+        self.cache[cache_key] = results
+        return results
 
     def is_valid_url(self, url):
         result = urlparse(url)
@@ -18,28 +73,38 @@ class Backend:
     def clear_cache(self):
         self.cache = {}
 
-    def search(self, query: str, options: dict) -> dict:
-
-        limit = options["limit"]
-        type = options["type"]
-        get_thumbnails = options["thumbs"]
+    def search(self, query: str, options: dict):
+        limit = options.get("limit", 10)
+        type = options.get("type", "both")
+        get_thumbnails = options.get("thumbs", "yes")
         opts = "_".join([f"{o}={options[o]}" for o in list(options.keys())])
-        queryKey = f"{query.strip().strip(' ')}_{opts}"
+        cache_key = f"{query.strip().strip(' ')}_{opts}"
         final_results = {}
+
         ydl_opts = {
             "quiet": True,
             "extract_flat": True,
             "noplaylist": True,
+            "playlistend": limit,
+            "no_warnings": True,
         }
 
-        if queryKey in self.cache:
-            final_results = self.cache.get(queryKey)
+        if cache_key in self.cache:
+            final_results = self.cache.get(cache_key)
         else:
             search_query = f"ytsearch{limit}:{query}"
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(search_query, download=False)
+                info = {}
+                try:
+                    info = ydl.extract_info(search_query, download=False)
+                except:
+                    print("Failed To Search Please Try Again Later or report on github")
+                    return False
+
                 entries = info.get("entries", [])
                 for entry in entries:
+                    if entry is None:
+                        continue
                     duration_seconds = int(entry.get("duration") or 0)
 
                     base_data = {
@@ -74,7 +139,7 @@ class Backend:
                             "is_short": duration_seconds <= 60,
                         }
 
-        self.cache[queryKey] = final_results
+        self.cache[cache_key] = final_results
         return final_results
 
     def _parse_duration(self, seconds: int) -> str:
@@ -114,6 +179,9 @@ class Backend:
                 return txt["runs"][0]["text"]
 
     def download(self, stream_url):
+        if not self.is_valid_url(stream_url):
+            print("Invalid Url")
+            return
         output_path = self.output_path or self.open_dialog()
         ydl_opts = {
             "format": "best",  # 'best' usually selects the best quality stream available
