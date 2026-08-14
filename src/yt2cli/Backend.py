@@ -5,22 +5,21 @@ from urllib.parse import urlparse
 
 import yt_dlp
 
-
-class SilentLogger:
-    def debug(self, msg):
-        pass
-
-    def warning(self, msg):
-        pass
-
-    def error(self, msg):
-        pass  # يمنع الطباعة النهائية للخطأ
+from yt2cli.Logger import Logger
 
 
 class Backend:
     def __init__(self):
         self.cache = {}
         self.output_path = None
+        self.data_opts = {
+            "quiet": True,
+            "extract_flat": True,
+            "noplaylist": True,
+            "no_warnings": True,
+            "ignoreerrors": True,
+            "logger": Logger(),
+        }
 
     def get_channel_videos(self, channel: str, options: dict):
         limit = options.get("limit", 10)
@@ -32,17 +31,8 @@ class Backend:
         if self.cache.get(cache_key):
             return self.cache[cache_key]
 
-        ydl_opts = {
-            "quiet": True,
-            "extract_flat": True,
-            "noplaylist": True,
-            "playlistend": limit,
-            "no_warnings": True,
-            "ignoreerrors": True,
-        }
-
         results = {}
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        with yt_dlp.YoutubeDL(self.data_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             if info and "entries" in info:
                 for entry in info.get("entries", []):
@@ -81,19 +71,11 @@ class Backend:
         cache_key = f"{query.strip().strip(' ')}_{opts}"
         final_results = {}
 
-        ydl_opts = {
-            "quiet": True,
-            "extract_flat": True,
-            "noplaylist": True,
-            "playlistend": limit,
-            "no_warnings": True,
-        }
-
         if cache_key in self.cache:
             final_results = self.cache.get(cache_key)
         else:
             search_query = f"ytsearch{limit}:{query}"
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            with yt_dlp.YoutubeDL(self.data_opts) as ydl:
                 info = {}
                 try:
                     info = ydl.extract_info(search_query, download=False)
