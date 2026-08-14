@@ -1,8 +1,8 @@
 [project]
 name = "yt2cli"
-version = "1.0.0"
+version = "1.0.0" # Im Using That on Local to run Poetry
 dynamic = ["version"]
-description = "Access To Youtube Easly From Your Terminal"
+description = "Access To Youtube Easily From Your Terminal"
 authors = [
     {name = "Ahmed Hassan",email = "ah8438263@gmail.com"}
 ]

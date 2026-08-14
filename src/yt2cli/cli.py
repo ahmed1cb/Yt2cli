@@ -1,7 +1,11 @@
 # Python Modules
-import readline
 import sys
 
+# maybe not on all platforms
+try:
+    import readline
+except ImportError:
+    pass
 # App Modules
 from . import Yt2cli
 
