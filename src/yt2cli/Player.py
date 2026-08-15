@@ -11,6 +11,9 @@ import yt_dlp
 class Player:
     def play(self, basic_url: str):
         stream_url = self._get_stream_url(basic_url)
+
+        if not stream_url:
+            return
         self.open_with_player(stream_url)
 
     def open_with_player(self, stream_url: str):
@@ -50,4 +53,5 @@ class Player:
                 info = ydl.extract_info(basic, download=False)
                 return info["url"]
         except:
+            print("Failed To Open Please Try again ")
             return None

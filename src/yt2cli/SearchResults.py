@@ -37,11 +37,11 @@ class Results:
                 print(line)
 
     def _build_card_lines(self, video: dict):
-        title = video.get("title") or "Untitled"
-        channel = video.get("channel") or "Unknown"
-        views = video.get("views") or "-"
-        duration = video.get("duration")
-        is_short = video.get("is_short")
+        title = video.get("title", "Untitled")
+        channel = video.get("channel", "Unknown")
+        views = video.get("views", "-")
+        duration = video.get("duration", "0")
+        is_short = video.get("is_short", "0")
         vid = video.get("id")
 
         info_lines = [
@@ -87,10 +87,10 @@ class Results:
         return text + " " * (width - self._visible_len(text) + gap)
 
     def _visible_len(self, text):
-        return len(ANSI_RE.sub("", text))
+        return len(ANSI_RE.sub("", text) or [])
 
     def _truncate(self, text, max_len):
-        return text if len(text) <= max_len else text[: max_len - 1] + "…"
+        return text if len(text or "") <= max_len else text[: max_len - 1] + "…"
 
     def _get_image(self, path: str):
         try:

@@ -11,7 +11,7 @@ class Backend:
         self.cache = {}
         self.data_opts = {
             "quiet": True,
-            "extract_flat": True,
+            "extract_flat": "in_playlist",
             "noplaylist": True,
             "no_warnings": True,
             "ignoreerrors": True,
@@ -43,7 +43,7 @@ class Backend:
                         "id": entry.get("id"),
                         "title": entry.get("title"),
                         "url": entry.get("url"),
-                        "channel": entry.get("channel") or entry.get("uploader"),
+                        "channel": channel,
                         "views": self._parse_views(entry.get("view_count", 0)),
                         "duration": self._parse_duration(duration_seconds),
                         "thumbnail": self._get_thumbnail(entry)
@@ -61,9 +61,17 @@ class Backend:
     def clear_cache(self):
         self.cache = {}
 
+    def _matches_type(self, duration_seconds: int, type_filter: str) -> bool:
+        is_short = duration_seconds <= (60 * 4)
+        if type_filter == "long":
+            return not is_short
+        if type_filter == "short":
+            return is_short
+        return True
+
     def search(self, query: str, options: dict):
         limit = options.get("limit", 10)
-        type = options.get("type", "both")
+        type_filter = options.get("type", "both")
         get_thumbnails = options.get("thumbs", "yes")
         opts = "_".join([f"{o}={options[o]}" for o in list(options.keys())])
         cache_key = f"{query.strip().strip(' ')}_{opts}"
@@ -71,53 +79,43 @@ class Backend:
 
         if cache_key in self.cache:
             final_results = self.cache.get(cache_key)
-        else:
-            search_query = f"ytsearch{limit}:{query}"
-            with yt_dlp.YoutubeDL(self.data_opts) as ydl:
-                info = {}
-                try:
-                    info = ydl.extract_info(search_query, download=False)
-                except:
-                    print("Failed To Search Please Try Again Later or report on github")
-                    return False
+            return
+        search_query = f"ytsearch{limit}:{query}"
 
-                entries = info.get("entries", [])
-                for entry in entries:
-                    if entry is None:
-                        continue
-                    duration_seconds = int(entry.get("duration") or 0)
+        # for Shorts
+        url = f"https://www.youtube.com/results?search_query={query}&sp=EgIYAQ%3D%3D"  # Less Than 4 Mins is a short
 
-                    base_data = {
-                        "id": entry.get("id"),
-                        "title": entry.get("title"),
-                        "url": entry.get("url"),
-                        "channel": entry.get("channel") or entry.get("uploader"),
-                        "views": self._parse_views(entry.get("view_count")),
-                        "duration": self._parse_duration(duration_seconds),
-                        "thumbnail": self._get_thumbnail(entry)
-                        if get_thumbnails.lower() in ["yes", "true"]
-                        else None,
-                    }
+        with yt_dlp.YoutubeDL(self.data_opts) as ydl:
+            info = {}
+            try:
+                info = ydl.extract_info(
+                    search_query if type_filter in ["both", "long"] else url,
+                    download=False,
+                )
+            except:
+                print("Failed To Search Please Try Again Later or report on github")
+                return False
 
-                    if type == "long":
-                        if duration_seconds > 60:
-                            final_results[entry.get("id")] = {
-                                **base_data,
-                                "is_short": False,
-                            }
+            entries = info.get("entries", [])
+            for entry in entries:
+                if entry is None or len(final_results) >= limit:
+                    break
+                duration_seconds = int(entry.get("duration") or 0)
+                if not self._matches_type(duration_seconds, type_filter):
+                    continue
 
-                    elif type == "short":
-                        if duration_seconds <= 60:
-                            final_results[entry.get("id")] = {
-                                **base_data,
-                                "is_short": True,
-                            }
-
-                    else:
-                        final_results[entry.get("id")] = {
-                            **base_data,
-                            "is_short": duration_seconds <= 60,
-                        }
+                final_results[entry.get("id")] = {
+                    "id": entry.get("id"),
+                    "title": entry.get("title"),
+                    "url": entry.get("url"),
+                    "channel": entry.get("channel") or entry.get("uploader"),
+                    "views": self._parse_views(entry.get("view_count")),
+                    "duration": self._parse_duration(duration_seconds),
+                    "thumbnail": self._get_thumbnail(entry)
+                    if get_thumbnails.lower() in ("yes", "true")
+                    else None,
+                    "is_short": duration_seconds <= (60 * 4),
+                }
 
         self.cache[cache_key] = final_results
         return final_results

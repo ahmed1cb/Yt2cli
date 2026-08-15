@@ -67,6 +67,30 @@ class Yt2cli:
         self.backend = Backend()
         self.show_options()
 
+    def handle(self, args: list | str):
+        if not args:
+            return
+        if type(args) is str:
+            args = args.split()
+        command = args[0]
+
+        params = args[1:]
+
+        target_option = self.options.get(command)
+        # Now the Search is the Default Option
+
+        if target_option is None:
+            if self.backend.is_valid_url(command) and self.backend.is_youtube_video_url(
+                command
+            ):
+                self.player.play(command)
+                return
+            params.insert(0, command)
+            self._search(params)
+            return
+        callable = target_option.get("_callable")
+        callable(params)
+
     def _more(self):
         if len(self.lastQueury) < 1:
             print("There is no History To Search From")
@@ -98,10 +122,12 @@ class Yt2cli:
             if not self.videos:
                 print("No Results Found")
                 return
+            self._clear()
+            print(f"Now Showing {channel_name} Videos")
             self._show()
         except Exception as e:
             print(
-                "Something Went Wrong , Report If You Think its a bug::::  ",
+                "Something Went Wrong , Report If You Think its a bug ",
                 e,
             )
 
@@ -132,30 +158,6 @@ class Yt2cli:
     def _reset(self):
         self._clear_cache()
         self._clear_list()
-
-    def handle(self, args: list | str):
-        if not args:
-            return
-        if type(args) is str:
-            args = args.split()
-        command = args[0]
-
-        params = args[1:]
-
-        target_option = self.options.get(command)
-        # Now the Search is the Default Option
-
-        if target_option is None:
-            if self.backend.is_valid_url(command) and self.backend.is_youtube_video_url(
-                command
-            ):
-                self.player.play(command)
-                return
-            params.insert(0, command)
-            self._search(params)
-            return
-        callable = target_option.get("_callable")
-        callable(params)
 
     def show_options(self):
         print("=" * 50)
@@ -200,7 +202,7 @@ class Yt2cli:
 
         self.lastQueury = [query_str, search_options]
 
-        print(" Now Loading...May Take some Time to Load and Display Results")
+        print(" Now Loading... May Take some Time to Load and Display Results")
 
         search_results = self.backend.search(query_str, search_options)
         self._clear()
@@ -216,15 +218,15 @@ class Yt2cli:
                 for option_name in list(search_options)
             ]
         )
-        print(
-            "*" * 10
-            + f" Search Results For: {query_str} , {applied_opts_str} "
-            + "*" * 10
-        )
 
         if len(self.videos) == 0:
             print("No Results")
             return
+        print(
+            "*" * 10
+            + f" Showing Results For: {query_str} , {applied_opts_str} "
+            + "*" * 10
+        )
 
         self._show()
 

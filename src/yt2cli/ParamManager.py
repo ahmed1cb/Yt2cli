@@ -1,10 +1,10 @@
 class Params:
     def __init__(self, options: dict, params: list) -> None:
         self.options = options
-        self.params = params
-        self._failed = False
+        self.params: list = params
+        self._failed: bool = False
 
-    def failed(self):
+    def failed(self) -> bool:
         return self._failed
 
     def get_normal_strings(
