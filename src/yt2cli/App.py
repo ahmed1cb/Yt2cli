@@ -149,7 +149,9 @@ class Yt2cli:
         # Now the Search is the Default Option
 
         if target_option is None:
-            if self.backend.is_valid_url(command) and "youtube.com/watch" in command:
+            if self.backend.is_valid_url(command) and self.backend.is_youtube_video_url(
+                command
+            ):
                 self.player.play(command)
                 return
             params.insert(0, command)
