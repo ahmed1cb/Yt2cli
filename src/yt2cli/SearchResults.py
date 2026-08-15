@@ -1,4 +1,3 @@
-import os
 import re
 import shutil
 
@@ -10,9 +9,6 @@ ANSI_RE = re.compile(r"\033\[[0-9;]*m")
 class Results:
     def __init__(self, videos: list[dict]) -> None:
         self.videos = videos
-
-    def _clear(self):
-        os.system("cls" if os.name == "nt" else "clear")
 
     def print_video_cards(self, gap=2):
         if not self.videos:

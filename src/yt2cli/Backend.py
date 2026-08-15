@@ -1,7 +1,4 @@
 # Required Modules
-import os
-import platform
-import subprocess
 from urllib.parse import urlparse
 
 import yt_dlp
@@ -12,7 +9,6 @@ from yt2cli.Logger import Logger
 class Backend:
     def __init__(self):
         self.cache = {}
-        self.output_path = None
         self.data_opts = {
             "quiet": True,
             "extract_flat": True,
@@ -160,7 +156,6 @@ class Backend:
         if not self.is_valid_url(stream_url):
             print("Invalid Url")
             return
-        self.output_path = output_path
 
         ydl_opts = {
             "format": "best",  # 'best' usually selects the best quality stream available

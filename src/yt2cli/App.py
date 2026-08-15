@@ -119,9 +119,6 @@ class Yt2cli:
             print("Invalid Id Or Id not in the Videos List")
             return
 
-        if not target:
-            return
-
         pyperclip.copy(target["url"])
 
         print("Copied Successfully")
