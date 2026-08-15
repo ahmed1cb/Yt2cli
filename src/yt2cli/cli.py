@@ -11,10 +11,10 @@ from . import Yt2cli
 
 
 def main():
-    app = Yt2cli()
+    app: Yt2cli = Yt2cli()
     while True:
         try:
-            args = input("Yt2Cli Run: ")
+            args: str = input("Yt2Cli Run: ")
             app.handle(args)
         except (KeyboardInterrupt, EOFError):
             sys.exit("-App Closed-")

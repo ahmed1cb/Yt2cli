@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 import yt_dlp
 
-from yt2cli.Logger import Logger
+from .Logger import Logger
 
 
 class Backend:
