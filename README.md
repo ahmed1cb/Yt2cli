@@ -5,7 +5,7 @@ A simple command-line (CLI) tool for searching and playing YouTube videos direct
 ## Features
 
 - Search YouTube videos by keyword, with an optional result limit (`--limit=<n>`, default 10)
-- Filter results by video type with `--type=short|long|both` (short = 60s or less, long = more than 60s)
+- Filter results by video type with `--type=short|long|both` (short = 4 minutes or less, long = more than 4 minutes)
 - Browse a channel's videos by its YouTube handle: `channel <channeluser>` (supports `--limit=<n>` and `--thumbs=yes|no`)
 - Results are cached per query and options (limit, type, thumbs), so re-searching the same keyword is instant
 - Load more results from the last search with `more`
@@ -91,7 +91,7 @@ This launches an interactive prompt. Type a command and press Enter.
 ==================================================
 
 Yt2Cli Run: python tutorial --type=both
-********** Search Results For: python tutorial , limit = 10 type = both thumbs = yes **********
+ ********** Showing Results For: python tutorial , limit = 10 type = both thumbs = yes **********
  ──────────────────────────────────────────────────────────────
  ┌─────────────── block art ───────────────┐  [0] Python Basics for Beginners
  │ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │      Programming Academy
@@ -166,7 +166,7 @@ yt2cli/
 - The app uses [yt-dlp](https://github.com/yt-dlp/yt-dlp) to search and extract video playback URLs.
 - `channel <channeluser>` loads a channel's videos from its `/videos` tab using the channel's YouTube handle (`@handle` or just `handle`); it accepts `--limit=<n>` and `--thumbs=yes|no`, and results are cached per channel and options.
 - Search results are cached per query and options (limit, type, thumbs) in memory; playing a video re-resolves the stream URL with yt-dlp.
-- `--type=short|long|both` filters results by duration: `short` videos are 60 seconds or less, `long` videos are more than 60 seconds, `both` returns everything.
+- `--type=short|long|both` filters results by duration: `short` videos are 4 minutes or less, `long` videos are more than 4 minutes, `both` returns everything.
 - `--thumbs=yes|no` (also accepts `true`/`false`) toggles whether search results render the video thumbnail as block art; `no` skips fetching thumbnails for faster results.
 - `more` re-searches the last query with a higher limit (adds 5 results each time).
 - `download <id> --path=<existing-dir>` saves the video with `yt-dlp` into the given existing folder. The folder must already exist and is passed with `--path`. It accepts multiple ids at once: `download 0 2 5 --path=~/Videos`.
