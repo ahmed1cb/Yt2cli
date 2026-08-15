@@ -1,4 +1,5 @@
 # Required Modules
+import os
 import platform
 import subprocess
 from urllib.parse import urlparse
@@ -155,11 +156,12 @@ class Backend:
         except:
             return views
 
-    def download(self, stream_url):
+    def download(self, stream_url, output_path: str):
         if not self.is_valid_url(stream_url):
             print("Invalid Url")
             return
-        output_path = self.output_path or self.open_dialog()
+        self.output_path = output_path
+
         ydl_opts = {
             "format": "best",  # 'best' usually selects the best quality stream available
             "outtmpl": f"{output_path}/%(title)s.%(ext)s",
@@ -176,47 +178,3 @@ class Backend:
                 ydl.download([stream_url])
         except:
             print(f"Download failed")
-
-    def open_dialog(self):
-        system = platform.system()
-
-        if system == "Linux":
-            result = subprocess.run(
-                [
-                    "zenity",
-                    "--file-selection",
-                    "--directory",
-                    "--title=Choose Directory to Save the Video inside",
-                ],
-                capture_output=True,
-                text=True,
-            )
-
-            self.output_path = result.stdout.strip()
-
-        elif system == "Darwin":  # macOS
-            result = subprocess.run(
-                [
-                    "osascript",
-                    "-e",
-                    'POSIX path of (choose folder with prompt "Choose Directory to Save the Video inside")',
-                ],
-                capture_output=True,
-                text=True,
-            )
-            self.output_path = result.stdout.strip()
-
-        elif system == "Windows":
-            ps_script = """
-                                Add-Type -AssemblyName System.Windows.Forms
-                                $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
-                                $dialog.ShowDialog() | Out-Null
-                                $dialog.SelectedPath
-                        """
-            result = subprocess.run(
-                ["powershell", "-Command", ps_script], capture_output=True, text=True
-            )
-
-            self.output_path = result.stdout.strip()
-
-        return self.output_path

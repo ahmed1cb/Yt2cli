@@ -269,19 +269,20 @@ class Yt2cli:
         self.player.play(url)
 
     def _download(self, params: list = []):
-        if not params or len(params) == 0:
-            print("id or url Required")
-            return
-
         download_options = {}
-        download_allowed_options = {"--url": str}
+        download_allowed_options = {"--url": str, "--path": str}
 
         download_parser = Params(download_allowed_options, params)
         download_options = download_parser.get_params_with_values()
+        url = download_options.get("url")
+        save_path = download_options.get("path")
 
-        if download_options.get("url"):
+        if not save_path or not os.path.exists(save_path):
+            print("Should Provide a Valid Existing Path use --path=path")
+            return
+        if url:
             try:
-                self.backend.download(download_options["url"])
+                self.backend.download(url, save_path)
             except:
                 print("Something Went Wrong While Trying to Download The Video ")
             return
@@ -298,7 +299,7 @@ class Yt2cli:
             return
 
         for target in targets:
-            url = target["url"]
+            url = target.get("url")
             self.backend.download(url)
 
     def _clear(self):
