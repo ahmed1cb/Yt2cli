@@ -30,7 +30,6 @@ class Results:
         padded_cards = [
             [self._pad(l, card_width, gap) for l in card] for card in raw_cards
         ]
-        self._clear()
         for row_start in range(0, len(padded_cards), cols):
             row_cards = padded_cards[row_start : row_start + cols]
             max_height = max(len(c) for c in row_cards)

@@ -12,8 +12,8 @@ A simple command-line (CLI) tool for searching and playing YouTube videos direct
 - Display search results as formatted video cards (title, channel, views with `K`/`M`/`B` suffix, duration, and Short/Normal badge) with the video thumbnail rendered as block/pixel art; cards flow into a responsive multi-column grid based on terminal width. Disable thumbnail rendering with `--thumbs=no` for faster results
 - Play any video from the list through [mpv](https://mpv.io), falling back to the system's default application if mpv isn't installed
 - Play a video directly by URL without searching: `open --url=<youtube-url>`
-- Type a YouTube URL directly at the prompt to play it automatically, no command needed
-- Download one or more videos to a folder you pick (native folder dialog per OS), including direct URLs: `download --url=<youtube-url>`
+- Type a YouTube URL directly at the prompt to play it automatically, no command needed (recognizes `youtube.com/watch`, `youtu.be`, `/shorts/`, and `/embed/` links)
+- Download one or more videos to an existing folder with `--path=<existing-dir>`: `download <id1> <id2> ... --path=~/Videos`, including direct URLs: `download --url=<youtube-url> --path=~/Videos`
 - Copy a video's URL to the clipboard with `copy <id>` (uses `pyperclip`)
 - Clear the in-memory cache and the loaded list with `reset` or `cache:clear`
 - Any unrecognized command is treated as a search query
@@ -60,7 +60,7 @@ This launches an interactive prompt. Type a command and press Enter.
 | `channel <user>` | Browse a channel's videos by its YouTube handle (`channel <channeluser>`); supports `--limit=<n>` and `--thumbs=yes|no`     |
 | `show`          | Show the currently loaded videos from the last search                                                                       |
 | `open <id>`     | Play a video from the list by its number; use `open --url=<youtube-url>` to play a direct URL                               |
-| `download <id>` | Download one or more videos from the list (`download <id1> <id2> ...`); use `download --url=<youtube-url>` for a direct URL |
+| `download <id>` | Download one or more videos from the list to an existing folder (`download <id1> <id2> ... --path=<existing-dir>`); use `download --url=<youtube-url> --path=<existing-dir>` for a direct URL |
 | `copy <id>`     | Copy the URL of a video from the list to the clipboard                                                                      |
 | `more`          | Load more videos from the last search (adds 5 more results)                                                                 |
 | `reset`         | Clear the loaded video list and the backend cache                                                                           |
@@ -69,7 +69,7 @@ This launches an interactive prompt. Type a command and press Enter.
 | `help`          | Show a list of available commands                                                                                           |
 | `exit`          | Close the app                                                                                                               |
 
-> **Note:** Any input that isn't a recognized command is treated as a search query. A direct YouTube URL (containing `youtube.com/watch`) is played automatically instead of being searched.
+> **Note:** Any input that isn't a recognized command is treated as a search query. A direct YouTube URL (`youtube.com/watch`, `youtu.be/...`, `/shorts/...`, or `/embed/...`) is played automatically instead of being searched.
 
 ### Example
 
@@ -84,14 +84,14 @@ This launches an interactive prompt. Type a command and press Enter.
   [show]  Show The Current Loaded Videos
   [exit]  Close the App
   [help]  Show A List of Available Commands
-  [reset]  Remove The Saved Search And Backend Cache
-  [cache:clear]  Remove the Cached Search Results
+  [reset]  Remove The Saved Search Results And Backend Cached Data on the current session
+  [cache:clear]  Remove the Cached Search Results of the current session
   [more]  Get More Videos from the Last Searched Query
   [download]  Download A Youtube Video
 ==================================================
 
 Yt2Cli Run: python tutorial --type=both
-********** Search Results For: python tutorial , limit = 10 type = both **********
+********** Search Results For: python tutorial , limit = 10 type = both thumbs = yes **********
  ──────────────────────────────────────────────────────────────
  ┌─────────────── block art ───────────────┐  [0] Python Basics for Beginners
  │ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │      Programming Academy
@@ -133,7 +133,7 @@ You can also play a video directly by URL, without searching first:
 Yt2Cli Run: open --url=https://www.youtube.com/watch?v=id
 ```
 
-Or simply type the URL itself — it will be detected and played automatically:
+Or simply type the URL itself — it will be detected and played automatically (`youtube.com/watch`, `youtu.be/...`, `/shorts/...`, and `/embed/...` links are recognized):
 
 ```
 Yt2Cli Run: https://www.youtube.com/watch?v=id
@@ -154,7 +154,8 @@ yt2cli/
 │       ├── __init__.py      # App export entry point
 │       ├── App.py           # Core logic and command handling
 │       ├── Backend.py       # Search logic (yt-dlp), result caching, and downloads
-│       ├── ParamManager.py  # Parses `--option=value` arguments for commands
+│       ├── Logger.py         # Custom silent yt-dlp logger
+│       ├── ParamManager.py   # Parses `--option=value` arguments for commands
 │       ├── Player.py        # Video playback (mpv with system fallback)
 │       ├── SearchResults.py # Renders the video cards and thumbnail block art
 │       └── cli.py           # Interactive REPL entry point
@@ -168,11 +169,11 @@ yt2cli/
 - `--type=short|long|both` filters results by duration: `short` videos are 60 seconds or less, `long` videos are more than 60 seconds, `both` returns everything.
 - `--thumbs=yes|no` (also accepts `true`/`false`) toggles whether search results render the video thumbnail as block art; `no` skips fetching thumbnails for faster results.
 - `more` re-searches the last query with a higher limit (adds 5 results each time).
-- `download <id>` opens a native folder-picker dialog (zenity on Linux, osascript on macOS, PowerShell on Windows) and saves the video with `yt-dlp`. It accepts multiple ids at once: `download 0 2 5`.
+- `download <id> --path=<existing-dir>` saves the video with `yt-dlp` into the given existing folder. The folder must already exist and is passed with `--path`. It accepts multiple ids at once: `download 0 2 5 --path=~/Videos`.
 - `copy <id>` copies the video's URL to the clipboard via `pyperclip`.
 - `open --url=<youtube-url>` plays any video directly by URL, without needing to search for it first.
-- `download --url=<youtube-url>` downloads any video directly by URL, without needing to search for it first.
-- Typing a YouTube URL (containing `youtube.com/watch`) directly at the prompt plays it automatically.
+- `download --url=<youtube-url> --path=<existing-dir>` downloads any video directly by URL, without needing to search for it first.
+- Typing a YouTube URL (`youtube.com/watch`, `youtu.be/...`, `/shorts/...`, or `/embed/...`) directly at the prompt plays it automatically.
 
 ## License
 

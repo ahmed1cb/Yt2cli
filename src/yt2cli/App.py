@@ -35,7 +35,7 @@ class Yt2cli:
             },
             "show": {
                 "desc": "Show The Current Loaded Videos",
-                "_callable": lambda x=0: self._show(),
+                "_callable": lambda x=0: self.show_search_results(),
             },
             "exit": {
                 "desc": "Close the App",
@@ -203,9 +203,10 @@ class Yt2cli:
 
         self.lastQueury = [query_str, search_options]
 
-        print(" Now Loading...")
+        print(" Now Loading...May Take some Time to Load and Display Results")
 
         search_results = self.backend.search(query_str, search_options)
+        self._clear()
 
         if type(search_results) is dict:
             self.videos = list(search_results.values())
@@ -224,19 +225,23 @@ class Yt2cli:
             + "*" * 10
         )
 
-        self._clear()
         if len(self.videos) == 0:
             print("No Results")
             return
 
         self._show()
 
+    def show_search_results(self):
+        if len(self.videos) == 0:
+            print("Nothing to Show")
+            return
+        print("Displaying Search Results.... it may take some time ")
+        self._show()
+
     def _show(self):
         for i, target in enumerate(self.videos):
             target["id"] = i
-
         results_view = Results(self.videos)
-        print(" Now Showing ...")
         results_view.print_video_cards()
 
     def _load(self, params: list = []):
@@ -279,7 +284,11 @@ class Yt2cli:
         url = download_options.get("url")
         save_path = download_options.get("path")
 
-        if not save_path or not os.path.exists(save_path):
+        if (
+            not save_path
+            or not os.path.exists(save_path)
+            or not os.path.isdir(save_path)
+        ):
             print("Should Provide a Valid Existing Path use --path=path")
             return
         if url:
