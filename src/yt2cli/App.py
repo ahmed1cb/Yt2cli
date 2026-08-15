@@ -302,7 +302,7 @@ class Yt2cli:
 
         for target in targets:
             url = target.get("url")
-            self.backend.download(url)
+            self.backend.download(url, save_path)
 
     def _clear(self):
         os.system("cls" if os.name == "nt" else "clear")

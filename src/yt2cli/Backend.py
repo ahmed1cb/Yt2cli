@@ -182,11 +182,11 @@ class Backend:
     def is_youtube_video_url(self, url: str) -> bool:
         parsed = urlparse(url)
         host = parsed.netloc.lower().replace("www.", "").replace("m.", "")
-  
+
         if host == "youtu.be":
             return len(parsed.path.strip("/")) > 0
-  
+
         if host == "youtube.com":
             return parsed.path.startswith(("/watch", "/shorts/", "/embed/"))
-  
+
         return False
