@@ -2,3 +2,4 @@ dist
 tests
 */*/__pycache__
 poetry.lock
+__pycache__
