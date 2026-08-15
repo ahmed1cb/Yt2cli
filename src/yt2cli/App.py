@@ -46,11 +46,11 @@ class Yt2cli:
                 "_callable": lambda x=0: self.show_options(),
             },
             "reset": {
-                "desc": "Remove The Saved Search And Backend Cache",
+                "desc": "Remove The Saved Search Results And Backend Cached Data on the current session",
                 "_callable": lambda x=0: self._reset(),
             },
             "cache:clear": {
-                "desc": "Remove the Cached Search Results",
+                "desc": "Remove the Cached Search Results of the current session",
                 "_callable": lambda x=0: self._clear_cache(),
             },
             "more": {
@@ -180,10 +180,10 @@ class Yt2cli:
 
         search_params_parser = Params(search_allowed_options, params)
 
-        if search_params_parser.failed():
-            return
         search_options = search_options | search_params_parser.get_params_with_values()
 
+        if search_params_parser.failed():
+            return
         query_str = " ".join(search_params_parser.get_normal_strings())
 
         if search_options.get("type") and search_options["type"] not in v_types:

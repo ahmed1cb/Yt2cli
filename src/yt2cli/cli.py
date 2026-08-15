@@ -16,5 +16,5 @@ def main():
         try:
             args = input("Yt2Cli Run: ")
             app.handle(args)
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, EOFError):
             sys.exit("-App Closed-")

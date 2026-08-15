@@ -32,7 +32,8 @@ class Backend:
             return self.cache[cache_key]
 
         results = {}
-        with yt_dlp.YoutubeDL(self.data_opts) as ydl:
+        dl_opts = self.data_opts | {"playlistend": limit}
+        with yt_dlp.YoutubeDL(dl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             if info and "entries" in info:
                 for entry in info.get("entries", []):
@@ -56,7 +57,7 @@ class Backend:
         self.cache[cache_key] = results
         return results
 
-    def is_valid_url(self, url):
+    def is_valid_url(self, url: str):
         result = urlparse(url)
         return all([result.scheme, result.netloc])
 
@@ -153,12 +154,6 @@ class Backend:
                 return views
         except:
             return views
-
-    def get_channel_name(self, video):
-        for key in ["longBylineText", "shortBylineText", "ownerText"]:
-            txt = video.get(key, None)
-            if txt is not None:
-                return txt["runs"][0]["text"]
 
     def download(self, stream_url):
         if not self.is_valid_url(stream_url):
