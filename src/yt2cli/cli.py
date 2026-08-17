@@ -7,15 +7,19 @@ try:
 except ImportError:
     pass
 # App Modules
-from . import Yt2cli
+# Version
+from . import Yt2cli, __version__
 
 
 def main():
+    if "--version" in sys.argv:
+        print(__version__)
+        return
     app: Yt2cli = Yt2cli()
     while True:
         try:
             args: str = input("Yt2Cli Run: ")
             app.handle(args)
         except (KeyboardInterrupt, EOFError):
-            print("-App Closed-")
+            print("Goodbye.")
             sys.exit(0)

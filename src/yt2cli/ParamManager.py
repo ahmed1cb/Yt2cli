@@ -27,16 +27,16 @@ class Params:
                         eq_idx = param.find("=")
                         if eq_idx == -1:
                             print(
-                                f"Invalid Usage for Parameter {option}, Usage: --{option}={self.options[option].__name__}"
+                                f"Missing value for {option}. Usage: {option}=<value>"
                             )
                             self._failed = True
                             return {}
                         value = self.options[option](param[eq_idx + 1 :])
                         results[option.replace("--", "")] = value
                         break
-                    except:
+                    except Exception:
                         print(
-                            f"Invalid Value For {option}. Should be {self.options[option].__name__} , Usage:  {option}={self.options[option].__name__}"
+                            f"Invalid value for {option}. Expected {self.options[option].__name__}."
                         )
                         self._failed = True
                         return {}

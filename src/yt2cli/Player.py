@@ -52,6 +52,6 @@ class Player:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(basic, download=False)
                 return info["url"]
-        except:
-            print("Failed To Open Please Try again ")
+        except Exception:
+            print("Failed to resolve stream URL.")
             return None

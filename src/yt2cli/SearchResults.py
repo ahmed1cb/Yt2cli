@@ -95,6 +95,6 @@ class Results:
     def _get_image(self, path: str):
         try:
             return BlockImage.from_url(path, width=40)
-        except:
-            print("Failed to Load Video Thumnail")
+        except Exception:
+            print("Failed to load thumbnail.")
             return None

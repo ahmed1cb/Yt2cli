@@ -1,6 +1,5 @@
 # Required Modules
-from pipes import quote
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 import yt_dlp
 
@@ -122,12 +121,12 @@ class Backend:
 
             else:
                 return views
-        except:
+        except Exception:
             return views
 
     def download(self, stream_url, output_path: str):
         if not self.is_valid_url(stream_url):
-            print("Invalid Url")
+            print("Invalid URL.")
             return
 
         ydl_opts = {
@@ -140,12 +139,12 @@ class Backend:
             "downloader_args": {"ffmpeg": ["-loglevel", "error"]},
         }
 
-        print(f"Download Started On: {output_path}")
+        print(f"Downloading to: {output_path}")
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([stream_url])
-        except:
-            print(f"Download failed")
+        except Exception:
+            print("Download failed.")
 
     def is_youtube_video_url(self, url: str) -> bool:
         parsed = urlparse(url)

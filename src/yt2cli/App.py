@@ -14,68 +14,68 @@ from .SearchResults import Results
 class Yt2cli:
     def __init__(self) -> None:
         self._clear()
-        player = Player()
-        self.player = player
+        self.player = Player()
         self.options = {
             "channel": {
-                "desc": "Get Channel Videos, Usage channel :channeluser // the unique channel user",
+                "desc": "Browse a channel's videos by its YouTube handle",
                 "_callable": self._get_channel_videos,
             },
             "copy": {
-                "desc": "Use it to Copy the Youtube Video Url, Id Required",
+                "desc": "Copy a video's URL to the clipboard (ID required)",
                 "_callable": self._copy,
             },
             "open": {
-                "desc": "Use It to Open A video From the List of Searched Videos",
+                "desc": "Play a video from the list by its ID",
                 "_callable": self._load,
             },
             "clear": {
-                "desc": "Clear The Terminal Screen",
+                "desc": "Clear the terminal screen",
                 "_callable": lambda x=0: self._clear(),
             },
             "show": {
-                "desc": "Show The Current Loaded Videos",
+                "desc": "Show the currently loaded videos",
                 "_callable": lambda x=0: self.show_search_results(),
             },
             "exit": {
-                "desc": "Close the App",
-                "_callable": lambda x=0: sys.exit(" App Closed "),
+                "desc": "Exit the application",
+                "_callable": lambda x=0: self._exit(),
             },
             "help": {
-                "desc": "Show A List of Available Commands",
+                "desc": "Show available commands",
                 "_callable": lambda x=0: self.show_options(),
             },
             "reset": {
-                "desc": "Remove The Saved Search Results And Backend Cached Data on the current session",
+                "desc": "Clear the video list and backend cache",
                 "_callable": lambda x=0: self._reset(),
             },
             "cache:clear": {
-                "desc": "Remove the Cached Search Results of the current session",
+                "desc": "Clear cached search results only",
                 "_callable": lambda x=0: self._clear_cache(),
             },
             "more": {
-                "desc": "Get More Videos from the Last Searched Query",
+                "desc": "Load more results from the last search",
                 "_callable": lambda x=0: self._more(),
             },
             "download": {
-                "desc": "Download A Youtube Video",
+                "desc": "Download a YouTube video",
                 "_callable": self._download,
             },
             "playlist": {
-                "desc": "Get a Playlist Videos By Playlist url",
+                "desc": "Load videos from a YouTube playlist URL",
                 "_callable": self._get_playlist,
             },
         }
+
         self.videos = []
-        self.lastQueury = []  # [query , options]
+        self.last_query = []  # [query , options]
         self.backend = Backend()
         self.show_options()
 
-    def handle(self, args: list | str):
-        if not args:
+    def handle(self, args: str):
+        if not args.strip():
             return
-        if type(args) is str:
-            args = args.split()
+
+        args = args.split()
         command = args[0]
 
         params = args[1:]
@@ -87,23 +87,28 @@ class Yt2cli:
             if self.backend.is_valid_url(command) and self.backend.is_youtube_video_url(
                 command
             ):
-                print("Trying To Play Video...")
+                print("Resolving video...")
                 self.player.play(command)
                 return
             params.insert(0, command)
             self._search(params)
             return
-        callable = target_option.get("_callable")
-        callable(params)
+        _callable = target_option.get("_callable")
+        _callable(params)
+
+    def _exit(self):
+        print("Goodbye.")
+        sys.exit()
 
     def _get_playlist(self, params):
         play_list_allowed_opts = {"--limit": int, "--thumbs": str}
         parser = Params(play_list_allowed_opts, params)
-
+        if parser.failed():
+            return
         strs = parser.get_normal_strings()
         options = {"limit": 10, "thumbs": "yes"} | parser.get_params_with_values()
-        if len(strs) == 0:
-            print("Playlist Url is Required")
+        if not strs:
+            print("Playlist URL is required.")
             return
         try:
             url = strs[0]
@@ -112,29 +117,28 @@ class Yt2cli:
                 and not "?list=" in url
                 and not "/playlist" in url
             ):
-                print("Playlist Url is Invalid")
+                print("Invalid playlist URL.")
                 return
-            print("Trying to Get Playlist Videos...")
+            print("Loading playlist videos...")
 
             vids = self.backend.get_playlist_videos(url, options)
 
             self.videos = list(vids.values())
 
             self._show()
-        except Exception as e:
-            print(e)
-            print("Something Went Wrong Check The playlist url and try again")
+        except Exception:
+            print("Failed to load playlist. Check the URL and try again.")
 
     def _more(self):
-        if len(self.lastQueury) < 1:
-            print("There is no History To Search From")
+        if not self.last_query:
+            print("No previous search to extend.")
             return
         self._clear()  # Clear Terminal
-        query_str = self.lastQueury[0]
-        options = self.lastQueury[1]
+        query_str = self.last_query[0]
+        options = self.last_query[1]
 
         options["limit"] = options["limit"] + 5
-        print(" Now Loading...")
+        print("Loading...")
         new_vids = list(self.backend.search(query_str, options).values())
         self.videos = new_vids
         self._show()
@@ -144,9 +148,12 @@ class Yt2cli:
         channel_options = {"limit": 10, "thumbs": "yes"}
         parser = Params(channel_allowed_options, params)
         channel_options = channel_options | parser.get_params_with_values()
-        if len(parser.get_normal_strings()) == 0:
-            print("Channel is required")
+        if not parser.get_normal_strings():
+            print("Channel name is required.")
             return
+        if parser.failed():
+            return
+
         channel_name = parser.get_normal_strings()[0]
         try:
             self.videos = list(
@@ -154,34 +161,30 @@ class Yt2cli:
             )
 
             if not self.videos:
-                print("No Results Found")
+                print("No results found.")
                 return
             self._clear()
-            print(f"Now Showing {channel_name} Videos")
+            print(f"Showing videos from {channel_name}.")
             self._show()
-        except Exception as e:
-            print(
-                "Something Went Wrong , Report If You Think its a bug ",
-                e,
-            )
+        except Exception:
+            print("Failed to load channel videos.")
 
     def _copy(self, params):
         parser = Params({}, params)
         strs = parser.get_normal_strings()
-        if len(strs) == 0:
-            print("id is Required")
+        if not strs:
+            print("Video ID is required.")
             return
-        target = None
         try:
             id = int(strs[0])
             target = self.videos[id]
-        except:
-            print("Invalid Id Or Id not in the Videos List")
+        except Exception:
+            print("Invalid or unknown video ID.")
             return
 
         pyperclip.copy(target["url"])
 
-        print("Copied Successfully")
+        print("URL copied to clipboard.")
 
     def _clear_cache(self):
         self.backend.clear_cache()
@@ -204,7 +207,9 @@ class Yt2cli:
 
         print("=" * 50)
 
-    def _search(self, params: list = []):
+    def _search(self, params: list | None = None):
+        if params is None:
+            params = []
         self._clear()
         search_options = {"limit": 10, "type": "both", "thumbs": "yes"}
         v_types = ["short", "long", "both"]
@@ -221,54 +226,40 @@ class Yt2cli:
             return
         query_str = " ".join(search_params_parser.get_normal_strings())
 
-        if search_options.get("type") and search_options["type"] not in v_types:
-            print("Invalid Video Type , Available Types: " + " | ".join(v_types))
+        if search_options.get("type") not in v_types:
+            print("Invalid type. Available: short, long, both")
             return
 
         # when there is a params But no query
         if not query_str:
-            print("Type Something To search")
+            print("Enter a search query.")
             return
 
         if search_options["thumbs"].lower() not in th_opts:
-            print("--thumbs can only Recive " + " / ".join(th_opts))
+            print("--thumbs accepts: yes, no, true, false")
             return
 
-        self.lastQueury = [query_str, search_options]
+        self.last_query = [query_str, search_options]
 
-        print(" Now Loading... May Take some Time to Load and Display Results")
+        print("Searching...")
 
-        search_results = self.backend.search(query_str, search_options)
+        self.videos = list(self.backend.search(query_str, search_options).values())
         self._clear()
 
-        if type(search_results) is dict:
-            self.videos = list(search_results.values())
-        else:
-            return
-
-        applied_opts_str = " ".join(
-            [
-                f"{option_name} = {search_options[option_name]}"
-                for option_name in list(search_options)
-            ]
-        )
-
-        if len(self.videos) == 0:
-            print("No Results")
+        if not self.videos:
+            print("No results found.")
             return
         print(
-            "*" * 10
-            + f" Showing Results For: {query_str} , {applied_opts_str} "
-            + "*" * 10
+            f"Results for: {query_str} (limit={search_options['limit']}, type={search_options['type']}, thumbs={search_options['thumbs']})"
         )
 
         self._show()
 
     def show_search_results(self):
-        if len(self.videos) == 0:
-            print("Nothing to Show")
+        if not self.videos:
+            print("No videos loaded.")
             return
-        print("Displaying Search Results.... it may take some time ")
+        print("Displaying loaded videos...")
         self._show()
 
     def _show(self):
@@ -277,74 +268,74 @@ class Yt2cli:
         results_view = Results(self.videos)
         results_view.print_video_cards()
 
-    def _load(self, params: list = []):
-        if not params or len(params) == 0:
-            print("id or url Required")
+    def _load(self, params: list | None = None):
+        if params is None:
+            params = []
+        if not params:
+            print("Video ID or URL is required.")
             return
-        video_options = {}
         video_allowed_options = {
             "--url": str,
         }
         open_parser = Params(video_allowed_options, params)
 
-        video_options = video_options | open_parser.get_params_with_values()
-
+        video_options = open_parser.get_params_with_values()
         if video_options.get("url"):
             try:
                 self.player.play(video_options["url"])
                 return
-            except:
-                print("Something Went Wrong While Trying to Open the Video")
+            except Exception:
+                print("Failed to play video.")
                 return
-        target = {}
         try:
             id = int(open_parser.get_normal_strings()[0])
             target = self.videos[id]
-        except:
-            print("Invalid Id or not on the Saved Videos")
+        except Exception:
+            print("Invalid or unknown video ID.")
             return
 
         url = target.get("url")
 
         self.player.play(url)
 
-    def _download(self, params: list = []):
-        download_options = {}
+    def _download(self, params: list | None = None):
+        if params is None:
+            params = []
         download_allowed_options = {"--url": str, "--path": str}
 
         download_parser = Params(download_allowed_options, params)
         download_options = download_parser.get_params_with_values()
         url = download_options.get("url")
         save_path = download_options.get("path")
-
+        if download_parser.failed():
+            return
         if (
             not save_path
             or not os.path.exists(save_path)
             or not os.path.isdir(save_path)
         ):
-            print("Should Provide a Valid Existing Path use --path=path")
+            print("A valid directory path is required. Usage: --path=<dir>")
             return
         if url:
             try:
                 self.backend.download(url, save_path)
-            except:
-                print("Something Went Wrong While Trying to Download The Video ")
+            except Exception:
+                print("Failed to download video.")
             return
 
         targets = []
         strs = download_parser.get_normal_strings()
-        if len(strs) > 0 and strs[0] == "all":
+        if strs and strs[0] == "all":
             for vid in self.videos:
                 self.backend.download(vid.get("url"), save_path)
-
             return
-        for id in download_parser.get_normal_strings():
+        for id in strs:
             try:
                 targets.append(self.videos[int(id)])
-            except:
-                print(f"Cant Find Video with id {id}")
-        if len(targets) == 0:
-            print("Nothing to Download")
+            except Exception:
+                print(f"Video with ID {id} not found.")
+        if not targets:
+            print("No videos to download.")
             return
 
         for target in targets:
