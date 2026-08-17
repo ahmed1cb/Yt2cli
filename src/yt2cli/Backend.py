@@ -120,9 +120,9 @@ class Backend:
                 return f"{views / 1000:.2f}K"
 
             else:
-                return views
+                return views or "-"  # Cant Show Playlists Views
         except Exception:
-            return views
+            return views or "-"  # Cant Show Playlists Views
 
     def download(self, stream_url, output_path: str):
         if not self.is_valid_url(stream_url):

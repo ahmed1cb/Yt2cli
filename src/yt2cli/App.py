@@ -296,6 +296,9 @@ class Yt2cli:
 
         url = target.get("url")
 
+        if "playlist" in url:
+            print("Couldn't Resolve A Playlist URL")
+            return
         self.player.play(url)
 
     def _download(self, params: list | None = None):
@@ -327,10 +330,17 @@ class Yt2cli:
         strs = download_parser.get_normal_strings()
         if strs and strs[0] == "all":
             for vid in self.videos:
+                if "playlist" in vid["url"] or vid["views"] == 0:
+                    print(f"Couldn't Resolve The Playlist Playlist ID:{vid['id']} ")
+                    continue
                 self.backend.download(vid.get("url"), save_path)
             return
         for id in strs:
             try:
+                vid = self.videos.get(id)
+                if "playlist" in vid["url"] or vid["views"] == 0:
+                    print(f"Couldn't Resolve The Playlist Playlist ID: {id} ")
+                    continue
                 targets.append(self.videos[int(id)])
             except Exception:
                 print(f"Video with ID {id} not found.")
