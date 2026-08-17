@@ -7,6 +7,7 @@ A simple command-line (CLI) tool for searching and playing YouTube videos direct
 - Search YouTube videos by keyword, with an optional result limit (`--limit=<n>`, default 10)
 - Filter results by video type with `--type=short|long|both` (short = 4 minutes or less, long = more than 4 minutes)
 - Browse a channel's videos by its YouTube handle: `channel <channeluser>` (supports `--limit=<n>` and `--thumbs=yes|no`)
+- Load videos from a YouTube playlist URL: `playlist <url>` (supports `--limit=<n>` and `--thumbs=yes|no`)
 - Results are cached per query and options (limit, type, thumbs), so re-searching the same keyword is instant
 - Load more results from the last search with `more`
 - Display search results as formatted video cards (title, channel, views with `K`/`M`/`B` suffix, duration, and Short/Normal badge) with the video thumbnail rendered as block/pixel art; cards flow into a responsive multi-column grid based on terminal width. Disable thumbnail rendering with `--thumbs=no` for faster results
@@ -58,6 +59,7 @@ This launches an interactive prompt. Type a command and press Enter.
 | Command         | Description                                                                                                                 |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `channel <user>` | Browse a channel's videos by its YouTube handle (`channel <channeluser>`); supports `--limit=<n>` and `--thumbs=yes|no`     |
+| `playlist <url>` | Load videos from a YouTube playlist URL; supports `--limit=<n>` and `--thumbs=yes|no`                                      |
 | `show`          | Show the currently loaded videos from the last search                                                                       |
 | `open <id>`     | Play a video from the list by its number; use `open --url=<youtube-url>` to play a direct URL                               |
 | `download <id>` | Download one or more videos from the list to an existing folder (`download <id1> <id2> ... --path=<existing-dir>`); use `download --url=<youtube-url> --path=<existing-dir>` for a direct URL |
@@ -88,7 +90,8 @@ This launches an interactive prompt. Type a command and press Enter.
   [cache:clear]  Remove the Cached Search Results of the current session
   [more]  Get More Videos from the Last Searched Query
   [download]  Download A Youtube Video
-==================================================
+  [playlist]  Get a Playlist Videos By Playlist url
+  ==================================================
 
 Yt2Cli Run: python tutorial --type=both
  ********** Showing Results For: python tutorial , limit = 10 type = both thumbs = yes **********
@@ -145,6 +148,12 @@ You can also browse a channel's videos directly by its YouTube handle:
 Yt2Cli Run: channel MrBeast --limit=5
 ```
 
+You can also load videos from a YouTube playlist URL:
+
+```
+Yt2Cli Run: playlist https://www.youtube.com/playlist?list=PLxxxx --limit=5
+```
+
 ## Project Structure
 
 ```
@@ -165,6 +174,7 @@ yt2cli/
 
 - The app uses [yt-dlp](https://github.com/yt-dlp/yt-dlp) to search and extract video playback URLs.
 - `channel <channeluser>` loads a channel's videos from its `/videos` tab using the channel's YouTube handle (`@handle` or just `handle`); it accepts `--limit=<n>` and `--thumbs=yes|no`, and results are cached per channel and options.
+- `playlist <url>` loads videos from a YouTube playlist URL; it accepts `--limit=<n>` and `--thumbs=yes|no`, and results are cached per playlist and options.
 - Search results are cached per query and options (limit, type, thumbs) in memory; playing a video re-resolves the stream URL with yt-dlp.
 - `--type=short|long|both` filters results by duration: `short` videos are 4 minutes or less, `long` videos are more than 4 minutes, `both` returns everything.
 - `--thumbs=yes|no` (also accepts `true`/`false`) toggles whether search results render the video thumbnail as block art; `no` skips fetching thumbnails for faster results.

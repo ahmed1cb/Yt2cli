@@ -61,6 +61,10 @@ class Yt2cli:
                 "desc": "Download A Youtube Video",
                 "_callable": self._download,
             },
+            "playlist": {
+                "desc": "Get a Playlist Videos By Playlist url",
+                "_callable": self._get_playlist,
+            },
         }
         self.videos = []
         self.lastQueury = []  # [query , options]
@@ -83,6 +87,7 @@ class Yt2cli:
             if self.backend.is_valid_url(command) and self.backend.is_youtube_video_url(
                 command
             ):
+                print("Trying To Play Video...")
                 self.player.play(command)
                 return
             params.insert(0, command)
@@ -90,6 +95,35 @@ class Yt2cli:
             return
         callable = target_option.get("_callable")
         callable(params)
+
+    def _get_playlist(self, params):
+        play_list_allowed_opts = {"--limit": int, "--thumbs": str}
+        parser = Params(play_list_allowed_opts, params)
+
+        strs = parser.get_normal_strings()
+        options = {"limit": 10, "thumbs": "yes"} | parser.get_params_with_values()
+        if len(strs) == 0:
+            print("Playlist Url is Required")
+            return
+        try:
+            url = strs[0]
+            if (
+                not self.backend.is_valid_url(url)
+                and not "?list=" in url
+                and not "/playlist" in url
+            ):
+                print("Playlist Url is Invalid")
+                return
+            print("Trying to Get Playlist Videos...")
+
+            vids = self.backend.get_playlist_videos(url, options)
+
+            self.videos = list(vids.values())
+
+            self._show()
+        except Exception as e:
+            print(e)
+            print("Something Went Wrong Check The playlist url and try again")
 
     def _more(self):
         if len(self.lastQueury) < 1:
@@ -298,7 +332,12 @@ class Yt2cli:
             return
 
         targets = []
+        strs = download_parser.get_normal_strings()
+        if len(strs) > 0 and strs[0] == "all":
+            for vid in self.videos:
+                self.backend.download(vid.get("url"), save_path)
 
+            return
         for id in download_parser.get_normal_strings():
             try:
                 targets.append(self.videos[int(id)])

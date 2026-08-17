@@ -1,4 +1,5 @@
 # Required Modules
+from pipes import quote
 from urllib.parse import urlparse
 
 import yt_dlp
@@ -18,18 +19,22 @@ class Backend:
             "logger": Logger(),
         }
 
-    def get_channel_videos(self, channel: str, options: dict):
+    def get_playlist_videos(self, url: str, options: dict):
         limit = options.get("limit", 10)
         get_thumbnails = options.get("thumbs", "yes")
-        url = f"https://youtube.com/@{channel.strip().strip('@')}/videos"
         opts = "_".join([f"{o}={options[o]}" for o in list(options.keys())])
         cache_key = f"{url.strip().strip(' ')}_{opts}"
-
         if self.cache.get(cache_key):
             return self.cache[cache_key]
 
-        results = {}
         dl_opts = self.data_opts | {"playlistend": limit}
+        results = self.get_url_videos(url, dl_opts, get_thumbnails)
+
+        self.cache[cache_key] = results
+        return results
+
+    def get_url_videos(self, url, dl_opts, get_thumbnails):
+        results = {}
         with yt_dlp.YoutubeDL(dl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             if info and "entries" in info:
@@ -43,14 +48,28 @@ class Backend:
                         "id": entry.get("id"),
                         "title": entry.get("title"),
                         "url": entry.get("url"),
-                        "channel": channel,
+                        "channel": entry.get("uploader", "-"),
                         "views": self._parse_views(entry.get("view_count", 0)),
                         "duration": self._parse_duration(duration_seconds),
                         "thumbnail": self._get_thumbnail(entry)
                         if get_thumbnails.lower() in ["yes", "true"]
                         else None,
-                        "is_short": duration_seconds <= 60,
+                        "is_short": duration_seconds <= (60 * 4),
                     }
+        return results
+
+    def get_channel_videos(self, channel: str, options: dict):
+        limit = options.get("limit", 10)
+        get_thumbnails = options.get("thumbs", "yes")
+        url = f"https://youtube.com/@{channel.strip().strip('@')}/videos"
+        opts = "_".join([f"{o}={options[o]}" for o in list(options.keys())])
+        cache_key = f"{url.strip().strip(' ')}_{opts}"
+
+        if self.cache.get(cache_key):
+            return self.cache[cache_key]
+
+        dl_opts = self.data_opts | {"playlistend": limit}
+        results = self.get_url_videos(url, dl_opts, get_thumbnails)
         self.cache[cache_key] = results
         return results
 
@@ -61,62 +80,18 @@ class Backend:
     def clear_cache(self):
         self.cache = {}
 
-    def _matches_type(self, duration_seconds: int, type_filter: str) -> bool:
-        is_short = duration_seconds <= (60 * 4)
-        if type_filter == "long":
-            return not is_short
-        if type_filter == "short":
-            return is_short
-        return True
-
     def search(self, query: str, options: dict):
         limit = options.get("limit", 10)
         type_filter = options.get("type", "both")
         get_thumbnails = options.get("thumbs", "yes")
         opts = "_".join([f"{o}={options[o]}" for o in list(options.keys())])
         cache_key = f"{query.strip().strip(' ')}_{opts}"
-        final_results = {}
 
-        if cache_key in self.cache:
-            final_results = self.cache.get(cache_key)
-            return
-        search_query = f"ytsearch{limit}:{query}"
-
-        # for Shorts
-        url = f"https://www.youtube.com/results?search_query={query}&sp=EgIYAQ%3D%3D"  # Less Than 4 Mins is a short
-
-        with yt_dlp.YoutubeDL(self.data_opts) as ydl:
-            info = {}
-            try:
-                info = ydl.extract_info(
-                    search_query if type_filter in ["both", "long"] else url,
-                    download=False,
-                )
-            except:
-                print("Failed To Search Please Try Again Later or report on github")
-                return False
-
-            entries = info.get("entries", [])
-            for entry in entries:
-                if entry is None or len(final_results) >= limit:
-                    break
-                duration_seconds = int(entry.get("duration") or 0)
-                if not self._matches_type(duration_seconds, type_filter):
-                    continue
-
-                final_results[entry.get("id")] = {
-                    "id": entry.get("id"),
-                    "title": entry.get("title"),
-                    "url": entry.get("url"),
-                    "channel": entry.get("channel") or entry.get("uploader"),
-                    "views": self._parse_views(entry.get("view_count")),
-                    "duration": self._parse_duration(duration_seconds),
-                    "thumbnail": self._get_thumbnail(entry)
-                    if get_thumbnails.lower() in ("yes", "true")
-                    else None,
-                    "is_short": duration_seconds <= (60 * 4),
-                }
-
+        if self.cache.get(cache_key):
+            return self.cache.get(cache_key)
+        url = f"https://www.youtube.com/results?search_query={quote(query)}{'&sp=EgIYAQ%3D%3D' if type_filter == 'short' else ''}"  # Less Than 4 Mins is a short
+        opts = self.data_opts | {"playlistend": limit}
+        final_results = self.get_url_videos(url, opts, get_thumbnails)
         self.cache[cache_key] = final_results
         return final_results
 
